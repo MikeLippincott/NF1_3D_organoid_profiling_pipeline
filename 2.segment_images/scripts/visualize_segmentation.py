@@ -39,50 +39,20 @@ if not in_notebook:
     parser = argparse.ArgumentParser(description="Segment the nuclei of a tiff image")
 
     parser.add_argument(
-        "--input_dir",
+        "--well_fov",
         type=str,
         help="Path to the input directory containing the tiff images",
     )
-    parser.add_argument(
-        "--radius_constraint",
-        type=int,
-        default=10,
-        help="The maximum radius of the x-y vector",
-    )
-    parser.add_argument(
-        "--compartment",
-        type=str,
-        default="none",
-        help="The compartment to segment",
-    )
 
     args = parser.parse_args()
-    input_dir = pathlib.Path(args.input_dir).resolve(strict=True)
-    x_y_vector_radius_max_constaint = args.radius_constraint
-    compartment = args.compartment
+    well_fov = args.well_fov
 else:
     print("Running in a notebook")
-    input_dir = pathlib.Path("../processed_data/C4-2/").resolve(strict=True)
+    well_fov = "C4-2"
 
-    compartment = "organoid"
-
-# if compartment == "nuclei":
-#     input_image_dir = pathlib.Path(input_dir / "nuclei_masks.tiff").resolve(strict=True)
-#     x_y_vector_radius_max_constaint = 5  # pixels
-# elif compartment == "cell":
-#     input_image_dir = pathlib.Path(input_dir / "cell_masks.tiff").resolve(strict=True)
-#     x_y_vector_radius_max_constaint = 15  # pixels
-# elif compartment == "organoid":
-#     input_image_dir = pathlib.Path(input_dir / "organoid_masks.tiff").resolve(
-#         strict=True
-#     )
-#     x_y_vector_radius_max_constaint = 50  # pixels
-# else:
-#     raise ValueError(
-#         "Invalid compartment, please choose either 'nuclei', 'cell', or 'organoid'"
-#     )
-
-# output_image_dir = input_image_dir
+input_dir = pathlib.Path(f"../../data/NF0014/processed_data/{well_fov}/").resolve(
+    strict=True
+)
 
 
 # In[3]:
@@ -97,7 +67,7 @@ print(vispy.sys_info())
 # In[4]:
 
 
-image_dir = "../../data/NF0014/zstack_images/C4-2/"
+image_dir = f"../../data/NF0014/zstack_images/{well_fov}"
 label_dir = input_dir
 output_path = "output.zarr"
 channel_map = {

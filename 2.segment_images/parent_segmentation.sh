@@ -38,7 +38,7 @@ for well_fov in "${input_dirs[@]}"; do
         --gres=gpu:1 \
         --qos=normal \
         --account=amc-general \
-        --time=1:00:00 \
+        --time=2:00:00 \
         --output=segmentation_child-%j.out \
         child_segmentation.sh "$well_fov" "$patient"
 

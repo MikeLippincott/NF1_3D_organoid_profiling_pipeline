@@ -123,7 +123,8 @@ neighbors_out_dict = measure_3D_number_of_neighbors(
     anisotropy_factor=image_set_loader.anisotropy_factor,
 )
 final_df = pd.DataFrame(neighbors_out_dict)
-final_df.insert(0, "image_set", image_set_loader.image_set_name)
+if not final_df.empty:
+    final_df.insert(0, "image_set", image_set_loader.image_set_name)
 
 output_file = pathlib.Path(
     output_parent_path / f"Neighbors_{compartment}_{channel}_features.parquet"
@@ -133,7 +134,7 @@ final_df.to_parquet(output_file)
 final_df.head()
 
 
-# In[ ]:
+# In[7]:
 
 
 end_mem = psutil.Process(os.getpid()).memory_info().rss / 1024**2

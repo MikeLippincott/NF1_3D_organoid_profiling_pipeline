@@ -14,6 +14,8 @@ jupyter nbconvert --to script --output-dir=../nbconverted/ *.ipynb
 # run script(s)
 python ../nbconverted/0.cp_image_qc.py
 
+echo "CellProfiler runs have finished!"
+
 # deactivate the CellProfiler environment
 conda deactivate
 # activate the preprocessing environment

@@ -21,7 +21,7 @@ for patient in "${patient_array[@]}"; do
     --partition=amilan \
     --qos=long \
     --account=amc-general \
-    --time=48:00:00 \
+    --time=1:00:00 \
     --output=featurization_sc_grand_parent-%j.out \
     HPC_run_featurization_grand_parent.sh "$patient"
 done

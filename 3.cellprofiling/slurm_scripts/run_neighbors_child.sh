@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# module load miniforge
-# conda init bash
-# conda activate GFF_featurization
+module load miniforge
+conda init bash
+conda activate GFF_featurization
 
 cd ../scripts/ || exit
 well_fov=$1

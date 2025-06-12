@@ -12,7 +12,7 @@ parent_dir="../data/$patient/extracted_features"
 dirs=$(ls -d $parent_dir/*)
 
 cd scripts/ || exit
-python get_profiling_stats.py --patient "$patient"
+python 0.get_profiling_stats.py --patient "$patient"
 cd ../ || exit
 
 

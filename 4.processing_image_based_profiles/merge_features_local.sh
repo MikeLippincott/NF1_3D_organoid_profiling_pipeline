@@ -12,7 +12,7 @@ cd scripts/ || exit
 
 for patient in "${patient_array[@]}"; do
 
-    python get_profiling_stats.py --patient "$patient"
+    python 0.get_profiling_stats.py --patient "$patient"
     # get the list of all dirs in the parent_dir
     parent_dir="../../data/$patient/extracted_features"
     # get the list of all dirs in the parent_dir
@@ -20,7 +20,7 @@ for patient in "${patient_array[@]}"; do
     for dir in $dirs; do
         well_fov=$(basename $dir)
         echo $well_fov
-        python merge_feature_parquets.py --well_fov "$well_fov" --patient "$patient"
+        python 1.merge_feature_parquets.py --well_fov "$well_fov" --patient "$patient"
     done
 done
 

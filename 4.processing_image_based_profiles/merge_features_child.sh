@@ -9,7 +9,7 @@ patient=$2
 
 cd scripts/ || exit
 
-python merge_feature_parquets.py --well_fov "$well_fov" --patient "$patient"
+python 1.merge_feature_parquets.py --well_fov "$well_fov" --patient "$patient"
 
 cd ../ || exit
 

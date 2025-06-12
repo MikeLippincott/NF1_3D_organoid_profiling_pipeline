@@ -17,3 +17,5 @@ dependencies:
   - conda-forge::matplotlib
   - conda-forge::pycytominer
   - conda-forge::duckdb
+  - pip:
+      - cytotable

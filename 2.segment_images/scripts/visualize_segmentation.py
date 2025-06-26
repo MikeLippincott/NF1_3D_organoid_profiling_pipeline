@@ -15,6 +15,7 @@ import numpy as np
 import pandas as pd
 import skimage.io as io
 import tifffile
+from napari.utils import nbscreenshot
 from nviz.image import image_set_to_arrays
 from nviz.image_meta import extract_z_slice_number_from_filename, generate_ome_xml
 from nviz.view import view_ometiff_with_napari
@@ -161,8 +162,15 @@ with tiff.TiffWriter(output_path, bigtiff=True) as tif:
 # In[7]:
 
 
-view_ometiff_with_napari(
+viewer = view_ometiff_with_napari(
     ometiff_path=output_path,
     scaling_values=scaling_values,
     headless=False,
 )
+
+
+# In[ ]:
+
+
+# screenshot the napari viewer
+nbscreenshot(viewer)

@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
+# In[1]:
 
 
-import argparse
 import os
 import pathlib
 import sys
@@ -13,13 +12,12 @@ import time
 import psutil
 
 sys.path.append("../featurization_utils")
-import multiprocessing
 import pathlib
-from functools import partial
 from itertools import product
 
 import pandas as pd
-from intensity_utils import measure_3D_intensity_CPU
+from featurization_parsable_arguments import parse_featurization_args
+from intensity_utils import measure_3D_intensity_CPU, measure_3D_intensity_gpu
 from loading_classes import ImageSetLoader, ObjectLoader
 from resource_profiling_util import get_mem_and_time_profiling
 
@@ -34,99 +32,24 @@ else:
     from tqdm import tqdm
 
 
-# In[ ]:
-
-
-def process_combination(
-    args: tuple[str, str],
-    image_set_loader: ImageSetLoader,
-    output_parent_path: pathlib.Path,
-) -> str:
-    """
-    Process a single combination of compartment and channel.
-
-    Parameters
-    ----------
-    args : tuple
-        Args that contain the compartment and channel.
-        Ordered as (compartment, channel).
-        Yes, order matters here.
-        channel : str
-            The channel name.
-        compartment : str
-            The compartment name.
-    image_set_loader : Class ImageSetLoader
-        This contains the image information needed to retreive the objects.
-    output_parent_path : pathlib.Path
-        The parent path where the output files will be saved.
-    Returns
-    -------
-    str
-        A string indicating the compartment and channel that was processed.
-    """
-    compartment, channel = args
-    object_loader = ObjectLoader(
-        image_set_loader.image_set_dict[channel],
-        image_set_loader.image_set_dict[compartment],
-        channel,
-        compartment,
-    )
-    output_dict = measure_3D_intensity_CPU(object_loader)
-    final_df = pd.DataFrame(output_dict)
-    # prepend compartment and channel to column names
-    final_df = final_df.pivot(
-        index=["object_id"],
-        columns="feature_name",
-        values="value",
-    ).reset_index()
-    for col in final_df.columns:
-        if col == "object_id":
-            continue
-        else:
-            final_df.rename(
-                columns={col: f"Intensity_{compartment}_{channel}_{col}"},
-                inplace=True,
-            )
-
-    final_df.insert(0, "image_set", image_set_loader.image_set_name)
-
-    output_file = pathlib.Path(
-        output_parent_path / f"Intensity_{compartment}_{channel}_features.parquet"
-    )
-    output_file.parent.mkdir(parents=True, exist_ok=True)
-    final_df.to_parquet(output_file)
-
-    return f"Processed {compartment} - {channel}"
-
-
-# In[ ]:
+# In[2]:
 
 
 if not in_notebook:
-    argparser = argparse.ArgumentParser()
-    argparser.add_argument(
-        "--well_fov",
-        type=str,
-        default="None",
-        help="Well and field of view to process, e.g. 'A01_1'",
-    )
-    argparser.add_argument(
-        "--patient",
-        type=str,
-        help="Patient ID, e.g. 'NF0014'",
-    )
+    arguments_dict = parse_featurization_args()
+    patient = arguments_dict["patient"]
+    well_fov = arguments_dict["well_fov"]
+    channel = arguments_dict["channel"]
+    compartment = arguments_dict["compartment"]
+    processor_type = arguments_dict["processor_type"]
 
-    args = argparser.parse_args()
-    well_fov = args.well_fov
-    patient = args.patient
-    if well_fov == "None":
-        raise ValueError(
-            "Please provide a well and field of view to process, e.g. 'A01_1'"
-        )
 
 else:
     well_fov = "C4-2"
     patient = "NF0014"
+    channel = "DNA"
+    compartment = "Nuclei"
+    processor_type = "CPU"
 
 image_set_path = pathlib.Path(f"../../data/{patient}/cellprofiler/{well_fov}/")
 output_parent_path = pathlib.Path(
@@ -151,7 +74,7 @@ channel_n_compartment_mapping = {
 }
 
 
-# In[ ]:
+# In[4]:
 
 
 start_time = time.time()
@@ -159,7 +82,7 @@ start_time = time.time()
 start_mem = psutil.Process(os.getpid()).memory_info().rss / 1024**2
 
 
-# In[4]:
+# In[5]:
 
 
 image_set_loader = ImageSetLoader(
@@ -169,35 +92,49 @@ image_set_loader = ImageSetLoader(
 )
 
 
-# In[ ]:
+# In[6]:
 
 
-# Generate all combinations of compartments and channels
-combinations = list(
-    product(image_set_loader.compartments, image_set_loader.image_names)
+object_loader = ObjectLoader(
+    image_set_loader.image_set_dict[channel],
+    image_set_loader.image_set_dict[compartment],
+    channel,
+    compartment,
 )
-cores = multiprocessing.cpu_count()
-print(f"Using {cores} cores for processing.")
-# Use multiprocessing to process combinations in parallel
-with multiprocessing.Pool(processes=cores) as pool:
-    results = list(
-        tqdm(
-            pool.imap(
-                partial(
-                    process_combination,
-                    image_set_loader=image_set_loader,
-                    output_parent_path=output_parent_path,
-                ),
-                combinations,
-            ),
-            desc="Processing combinations",
-        )
+if processor_type == "GPU":
+    output_dict = measure_3D_intensity_gpu(object_loader)
+elif processor_type == "CPU":
+    output_dict = measure_3D_intensity_CPU(object_loader)
+else:
+    raise ValueError(
+        f"Processor type {processor_type} is not supported. Use 'CPU' or 'GPU'."
     )
+final_df = pd.DataFrame(output_dict)
+# prepend compartment and channel to column names
+final_df = final_df.pivot(
+    index=["object_id"],
+    columns="feature_name",
+    values="value",
+).reset_index()
+for col in final_df.columns:
+    if col == "object_id":
+        continue
+    else:
+        final_df.rename(
+            columns={col: f"Intensity_{compartment}_{channel}_{col}"},
+            inplace=True,
+        )
 
-print("Processing complete.")
+final_df.insert(0, "image_set", image_set_loader.image_set_name)
+
+output_file = pathlib.Path(
+    output_parent_path / f"Intensity_{compartment}_{channel}_features.parquet"
+)
+output_file.parent.mkdir(parents=True, exist_ok=True)
+final_df.to_parquet(output_file)
 
 
-# In[ ]:
+# In[7]:
 
 
 end_mem = psutil.Process(os.getpid()).memory_info().rss / 1024**2
@@ -210,8 +147,10 @@ get_mem_and_time_profiling(
     feature_type="Intensity",
     well_fov=well_fov,
     patient_id=patient,
-    CPU_GPU="CPU",
+    channel=channel,
+    compartment=compartment,
+    CPU_GPU=processor_type,
     output_file_dir=pathlib.Path(
-        f"../../data/{patient}/extracted_features/run_stats/{well_fov}_Intensity_CPU.parquet"
+        f"../../data/{patient}/extracted_features/run_stats/{well_fov}_{channel}_{compartment}_Intensity_{processor_type}.parquet"
     ),
 )

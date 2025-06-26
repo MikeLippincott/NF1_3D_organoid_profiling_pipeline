@@ -4,7 +4,6 @@
 # In[1]:
 
 
-import argparse
 import os
 import pathlib
 import sys
@@ -17,6 +16,8 @@ import numpy as np
 import pandas as pd
 import skimage
 from area_size_shape_utils import measure_3D_area_size_shape
+from area_size_shape_utils_gpu import measure_3D_area_size_shape_gpu
+from featurization_parsable_arguments import parse_featurization_args_area_size_shape
 from loading_classes import ImageSetLoader, ObjectLoader
 from resource_profiling_util import get_mem_and_time_profiling
 
@@ -36,30 +37,17 @@ import gc
 
 
 if not in_notebook:
-    argparser = argparse.ArgumentParser()
-    argparser.add_argument(
-        "--well_fov",
-        type=str,
-        default="None",
-        help="Well and field of view to process, e.g. 'A01_1'",
-    )
-    argparser.add_argument(
-        "--patient",
-        type=str,
-        help="Patient ID, e.g. 'NF0014'",
-    )
-
-    args = argparser.parse_args()
-    well_fov = args.well_fov
-    patient = args.patient
-    if well_fov == "None":
-        raise ValueError(
-            "Please provide a well and field of view to process, e.g. 'A01_1'"
-        )
+    arguments_dict = parse_featurization_args_area_size_shape()
+    patient = arguments_dict["patient"]
+    well_fov = arguments_dict["well_fov"]
+    compartment = arguments_dict["compartment"]
+    processor_type = arguments_dict["processor_type"]
 
 else:
     well_fov = "C4-2"
     patient = "NF0014"
+    compartment = "Nuclei"
+    processor_type = "CPU"
 
 image_set_path = pathlib.Path(f"../../data/{patient}/cellprofiler/{well_fov}/")
 output_parent_path = pathlib.Path(
@@ -105,37 +93,45 @@ image_set_loader = ImageSetLoader(
 # In[6]:
 
 
-for compartment in tqdm(
-    image_set_loader.compartments, desc="Processing compartments", position=0
-):
-    channel = "DNA"
-    object_loader = ObjectLoader(
-        image_set_loader.image_set_dict[channel],
-        image_set_loader.image_set_dict[compartment],
-        channel,
-        compartment,
+object_loader = ObjectLoader(
+    image_set_loader.image_set_dict["DNA"],
+    image_set_loader.image_set_dict[compartment],
+    "DNA",
+    compartment,
+)
+
+
+# area, size, shape
+if processor_type == "GPU":
+    size_shape_dict = measure_3D_area_size_shape_gpu(
+        image_set_loader=image_set_loader,
+        object_loader=object_loader,
     )
-    # area, size, shape
+elif processor_type == "CPU":
     size_shape_dict = measure_3D_area_size_shape(
         image_set_loader=image_set_loader,
         object_loader=object_loader,
     )
-    final_df = pd.DataFrame(size_shape_dict)
-
-    # prepend compartment and channel to column names
-    for col in final_df.columns:
-        if col not in ["object_id"]:
-            final_df.rename(
-                columns={col: f"Area.Size.Shape_{compartment}_{col}"},
-                inplace=True,
-            )
-    final_df.insert(1, "image_set", image_set_loader.image_set_name)
-
-    output_file = pathlib.Path(
-        output_parent_path / f"AreaSize_Shape_{compartment}_features.parquet"
+else:
+    raise ValueError(
+        f"Processor type {processor_type} is not supported. Use 'CPU' or 'GPU'."
     )
-    final_df.to_parquet(output_file)
-    final_df.head()
+final_df = pd.DataFrame(size_shape_dict)
+
+# prepend compartment and channel to column names
+for col in final_df.columns:
+    if col not in ["object_id"]:
+        final_df.rename(
+            columns={col: f"Area.Size.Shape_{compartment}_{col}"},
+            inplace=True,
+        )
+final_df.insert(1, "image_set", image_set_loader.image_set_name)
+
+output_file = pathlib.Path(
+    output_parent_path / f"AreaSize_Shape_{compartment}_features.parquet"
+)
+final_df.to_parquet(output_file)
+final_df.head()
 
 
 # In[7]:
@@ -151,8 +147,10 @@ get_mem_and_time_profiling(
     feature_type="AreaSizeShape",
     well_fov=well_fov,
     patient_id=patient,
-    CPU_GPU="CPU",
+    channel="DNA",
+    compartment=compartment,
+    CPU_GPU=processor_type,
     output_file_dir=pathlib.Path(
-        f"../../data/{patient}/extracted_features/run_stats/{well_fov}_AreaSizeShape_CPU.parquet"
+        f"../../data/{patient}/extracted_features/run_stats/{well_fov}_AreaSizeShape_DNA_{compartment}_{processor_type}.parquet"
     ),
 )

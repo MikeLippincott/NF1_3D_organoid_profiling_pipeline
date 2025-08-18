@@ -1,10 +1,8 @@
 #!/bin/bash
 
-module load anaconda
-conda init bash
-conda activate nf1_image_based_profiling_env
-
 patient=$1
+
+echo "Processing patient: $patient"
 
 git_root=$(git rev-parse --show-toplevel)
 if [ -z "$git_root" ]; then
@@ -23,7 +21,7 @@ python "$git_root"/4.processing_image_based_profiles/scripts/0.get_profiling_sta
 # loop through each dir and submit a job
 for dir in $dirs; do
     well_fov=$(basename "$dir")
-    echo "$well_fov"
+    echo "$patient - $well_fov"
     # check that the number of jobs is less than 990
     # prior to submitting a job
     number_of_jobs=$(squeue -u "$USER" | wc -l)
@@ -35,11 +33,11 @@ for dir in $dirs; do
         --nodes=1 \
         --ntasks=1 \
         --partition=amilan \
-        --qos=long \
+        --qos=normal \
         --account=amc-general \
-        --time=1:00:00 \
-        --output=parent_featurize-%j.out \
-        "$git_root"/4.processing_image_based_profiles/merge_features_parent.sh "$patient" "$well_fov"
+        --time=5:00 \
+        --output=child_featurize-%j.out \
+        "$git_root"/4.processing_image_based_profiles/merge_features_child.sh "$patient" "$well_fov"
 
 done
 

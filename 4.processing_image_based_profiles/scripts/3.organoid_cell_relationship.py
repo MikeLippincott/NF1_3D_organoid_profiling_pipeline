@@ -54,7 +54,7 @@ if not in_notebook:
     well_fov = args.well_fov
     patient = args.patient
 else:
-    well_fov = "C4-2"
+    well_fov = "C2-1"
     patient = "NF0014"
 
 
@@ -105,17 +105,17 @@ def centroid_within_bbox_detection(
 
 # input paths
 sc_profile_path = pathlib.Path(
-    f"{root_dir}/data/{patient}/image_based_profiles/{well_fov}/sc_profiles_{well_fov}.parquet"
+    f"{root_dir}/data/{patient}/image_based_profiles/0.converted_profiles/{well_fov}/sc_profiles_{well_fov}.parquet"
 ).resolve(strict=True)
 organoid_profile_path = pathlib.Path(
-    f"{root_dir}/data/{patient}/image_based_profiles/{well_fov}/organoid_profiles_{well_fov}.parquet"
+    f"{root_dir}/data/{patient}/image_based_profiles/0.converted_profiles/{well_fov}/organoid_profiles_{well_fov}.parquet"
 ).resolve(strict=True)
 # output paths
 sc_profile_output_path = pathlib.Path(
-    f"{root_dir}/data/{patient}/image_based_profiles/{well_fov}/sc_profiles_{well_fov}_related.parquet"
+    f"{root_dir}/data/{patient}/image_based_profiles/0.converted_profiles/{well_fov}/sc_profiles_{well_fov}_related.parquet"
 ).resolve()
 organoid_profile_output_path = pathlib.Path(
-    f"{root_dir}/data/{patient}/image_based_profiles/{well_fov}/organoid_profiles_{well_fov}_related.parquet"
+    f"{root_dir}/data/{patient}/image_based_profiles/0.converted_profiles/{well_fov}/organoid_profiles_{well_fov}_related.parquet"
 ).resolve()
 
 
@@ -139,9 +139,7 @@ sc_profile_df.insert(2, "parent_organoid", -1)
 
 
 x_y_z_sc_colnames = [
-    x
-    for x in sc_profile_df.columns
-    if "area" in x.lower() and "center" in x.lower() and "nuclei" in x.lower()
+    x for x in sc_profile_df.columns if "area" in x.lower() and "center" in x.lower()
 ]
 print(
     f"The nuclei centroids in the single-cell profile are in the columns:\n{x_y_z_sc_colnames}"
@@ -157,8 +155,6 @@ organoid_bbox_colnames = [
 organoid_bbox_colnames = sorted(organoid_bbox_colnames)
 print(f"The organoid bounding boxes are in the columns:\n{organoid_bbox_colnames}")
 
-
-# ### Relate the single cells and organoids
 
 # In[9]:
 
@@ -204,8 +200,6 @@ organoid_sc_counts = (
     .to_frame(name="single_cell_count")
     .reset_index()
 )
-# filter out singleton single-cells
-organoid_sc_counts = organoid_sc_counts.loc[organoid_sc_counts["parent_organoid"] > 0]
 # merge the organoid profile with the single-cell counts
 organoid_profile_df = pd.merge(
     organoid_profile_df,
@@ -218,16 +212,40 @@ sc_count = organoid_profile_df.pop("single_cell_count")
 organoid_profile_df.insert(2, "single_cell_count", sc_count)
 
 
-# ### Save the profiles
+# Even if the file is empty we still want to add it to the final dataframe dictionary so that we can merge on the same columns later.
+# This will help with file-based checking and merging.
+#
 
 # In[11]:
+
+
+if organoid_profile_df.empty:
+    # add a row with Na values
+    organoid_profile_df.loc[len(organoid_profile_df)] = [None] * len(
+        organoid_profile_df.columns
+    )
+    organoid_profile_df["image_set"] = well_fov
+
+
+# In[12]:
+
+
+if sc_profile_df.empty:
+    # add a row with Na values
+    sc_profile_df.loc[len(sc_profile_df)] = [None] * len(sc_profile_df.columns)
+    sc_profile_df["image_set"] = well_fov
+
+
+# ### Save the profiles
+
+# In[13]:
 
 
 organoid_profile_df.to_parquet(organoid_profile_output_path, index=False)
 organoid_profile_df.head()
 
 
-# In[12]:
+# In[14]:
 
 
 sc_profile_df.to_parquet(sc_profile_output_path, index=False)

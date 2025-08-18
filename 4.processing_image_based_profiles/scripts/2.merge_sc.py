@@ -63,21 +63,21 @@ if not in_notebook:
     patient = args.patient
     well_fov = args.well_fov
 else:
-    patient = "NF0014"
-    well_fov = "C4-2"
+    patient = "SARCO361"
+    well_fov = "G7-5"
 
 
 # In[ ]:
 
 
 input_sqlite_file = pathlib.Path(
-    f"{root_dir}/data/{patient}/converted_profiles/{well_fov}/{well_fov}.duckdb"
+    f"{root_dir}/data/{patient}/image_based_profiles/0.converted_profiles/{well_fov}/{well_fov}.duckdb"
 ).resolve(strict=True)
 destination_sc_parquet_file = pathlib.Path(
-    f"{root_dir}/data/{patient}/image_based_profiles/{well_fov}/sc_profiles_{well_fov}.parquet"
+    f"{root_dir}/data/{patient}/image_based_profiles/0.converted_profiles/{well_fov}/sc_profiles_{well_fov}.parquet"
 ).resolve()
 destination_organoid_parquet_file = pathlib.Path(
-    f"{root_dir}/data/{patient}/image_based_profiles/{well_fov}/organoid_profiles_{well_fov}.parquet"
+    f"{root_dir}/data/{patient}/image_based_profiles/0.converted_profiles/{well_fov}/organoid_profiles_{well_fov}.parquet"
 ).resolve()
 destination_sc_parquet_file.parent.mkdir(parents=True, exist_ok=True)
 dest_datatype = "parquet"
@@ -110,20 +110,20 @@ cells_table = cells_table[cells_table["object_id"].isin(intersection_set)]
 cytoplasm_table = cytoplasm_table[cytoplasm_table["object_id"].isin(intersection_set)]
 
 
-# In[6]:
+# In[ ]:
 
 
 # connect to DuckDB and register the tables
 with duckdb.connect() as con:
-    con.register("df1", nuclei_table)
-    con.register("df2", cells_table)
-    con.register("df3", cytoplasm_table)
+    con.register("nuclei", nuclei_table)
+    con.register("cells", cells_table)
+    con.register("cytoplasm", cytoplasm_table)
     # Merge them with SQL
     merged_df = con.execute("""
         SELECT *
-        FROM df1
-        LEFT JOIN df2 USING (object_id)
-        LEFT JOIN df3 USING (object_id)
+        FROM nuclei
+        LEFT JOIN cells USING (object_id)
+        LEFT JOIN cytoplasm USING (object_id)
     """).df()
 
 
@@ -136,7 +136,7 @@ organoid_table.to_parquet(destination_organoid_parquet_file, index=False)
 organoid_table.head()
 
 
-# In[ ]:
+# In[8]:
 
 
 print(f"Final merged single cell dataframe shape: {merged_df.shape}")

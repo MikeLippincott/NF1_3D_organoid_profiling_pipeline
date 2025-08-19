@@ -4,9 +4,6 @@ module load anaconda
 conda init bash
 conda activate nf1_image_based_profiling_env
 
-
-
-
 git_root=$(git rev-parse --show-toplevel)
 if [ -z "$git_root" ]; then
     echo "Error: Could not find the git root directory."
@@ -24,10 +21,11 @@ else
 fi
 
 # setup the logs dir
-if [ -d "$git_root/4.processing_image_based_profiles/logs" ]; then
-    rm -rf "$git_root/4.processing_image_based_profiles/logs"
+if [ -d "$git_root/4.processing_image_based_profiles/logs/patient_well_fovs/" ]; then
+    rm -rf "$git_root/4.processing_image_based_profiles/logs/patient_well_fovs/"
 fi
-mkdir "$git_root/4.processing_image_based_profiles/logs"
+mkdir -p "$git_root/4.processing_image_based_profiles/logs/patient_well_fovs/" # create the patients directory if it doesn't exist
+
 
 for patient in "${patient_array[@]}"; do
 
@@ -64,6 +62,8 @@ for patient in "${patient_array[@]}"; do
     } >> "$patient_log_file" 2>&1
 
 done
+
+python "$git_root"/4.processing_image_based_profiles/scripts/11.combine_patients.py
 
 conda deactivate
 

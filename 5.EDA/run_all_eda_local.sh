@@ -47,6 +47,15 @@ conda deactivate
 conda activate GFF_analysis
 python "$git_root"/5.EDA/scripts/8.threshold_hits.py
 
+conda activate GFF_analysis
+
+python "$git_root"/5.EDA/scripts/9.linear_modeling.py
+python "$git_root"/5.EDA/scripts/11.find_significant_features.py
+
+conda deactivate
+conda activate gff_figure_env
+Rscript "$git_root"/5.EDA/scripts/10.plot_linear_modeling_results.r
+
 
 conda deactivate
 

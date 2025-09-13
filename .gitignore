@@ -164,6 +164,7 @@ cython_debug/
 
 # Ignore data due to size
 data/*
+0.preprocessing_data/animations/mp4/*
 2.segment_images/examples/raw_z_input/*
 2.segment_images/processed_data/*
 2.segment_images/notebooks/output.zarr

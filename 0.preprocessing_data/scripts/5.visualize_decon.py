@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+# Thi document runs visualizations outputting `.mp4` and `.gif` files of 3D organoid data.
+# This notebok runs nviz to create the visualizations and napari.
+
 # ## Imports
 
 # In[1]:
@@ -110,15 +113,15 @@ decon_dir = pathlib.Path(
     f"{image_base_dir}/data/{patient}/deconvolved_images/{well_fov}/"
 ).resolve(strict=True)
 
-mp4_file_dir = pathlib.Path(
-    f"{root_dir}/0.preprocessing_data/animations/mp4/{well_fov}/"
+mp4_raw_file_dir = pathlib.Path(
+    f"{root_dir}/0.preprocessing_data/animations/raw/mp4/{well_fov}/"
 ).resolve()
-gif_file_dir = pathlib.Path(
-    f"{root_dir}/0.preprocessing_data/animations/gif/{well_fov}/"
+gif_raw_file_dir = pathlib.Path(
+    f"{root_dir}/0.preprocessing_data/animations/raw/gif/{well_fov}/"
 ).resolve()
 
-mp4_file_dir.mkdir(parents=True, exist_ok=True)
-gif_file_dir.mkdir(parents=True, exist_ok=True)
+mp4_raw_file_dir.mkdir(parents=True, exist_ok=True)
+gif_raw_file_dir.mkdir(parents=True, exist_ok=True)
 
 
 # In[4]:
@@ -136,7 +139,7 @@ channel_map = {
 scaling_values = [1, 0.1, 0.1]
 
 
-# In[5]:
+# In[ ]:
 
 
 # write a temp dir containing all images
@@ -154,7 +157,7 @@ for image in image_dir.glob("*.tif"):
     shutil.copyfile(image, temp_image_path)
 
 
-# In[6]:
+# In[ ]:
 
 
 label_dir = image_dir
@@ -211,20 +214,19 @@ ome_metadata = {
     "Channel": [{"Name": name} for name in combined_channel_names],
 }
 ome_xml = generate_ome_xml(ome_metadata)
-import tifffile as tiff
 
 # Write the combined data to a single OME-TIFF
-with tiff.TiffWriter(output_path, bigtiff=True) as tif:
+with tifffile.TiffWriter(output_path, bigtiff=True) as tif:
     tif.write(combined_data, description=ome_xml, photometric="minisblack")
 
 
-# In[7]:
+# In[ ]:
 
 
 shutil.rmtree(temporary_dir)
 
 
-# In[8]:
+# In[ ]:
 
 
 viewer = view_ometiff_with_napari(
@@ -234,7 +236,7 @@ viewer = view_ometiff_with_napari(
 )
 
 
-# In[9]:
+# In[ ]:
 
 
 # make the viewer full screen
@@ -295,14 +297,14 @@ for mp4_file in mp4_file_path:
     mp4_to_gif(mp4_file, gif_file)
 
 
-# In[10]:
+# In[ ]:
 
 
 # screenshot the napari viewer
 nbscreenshot(viewer)
 
 
-# In[11]:
+# In[ ]:
 
 
 # close the viewer

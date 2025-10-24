@@ -4,9 +4,10 @@
 # This notebook performs profile normalization.
 # All profiles are normalized to the DMSO control treated profiles.
 
-# In[1]:
+# In[ ]:
 
 
+import os
 import pathlib
 import sys
 
@@ -30,7 +31,9 @@ from notebook_init_utils import bandicoot_check, init_notebook
 
 root_dir, in_notebook = init_notebook()
 
-profile_base_dir = bandicoot_check(pathlib.Path("~/mnt/bandicoot").resolve(), root_dir)
+profile_base_dir = bandicoot_check(
+    pathlib.Path(os.path.expanduser("~/mnt/bandicoot")).resolve(), root_dir
+)
 
 
 # In[2]:

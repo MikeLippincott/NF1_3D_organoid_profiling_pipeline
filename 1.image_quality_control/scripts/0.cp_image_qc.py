@@ -9,9 +9,10 @@
 
 # ## Import libraries
 
-# In[2]:
+# In[ ]:
 
 
+import os
 import pathlib
 import pprint
 import sys
@@ -39,7 +40,7 @@ import cp_parallel
 # In[ ]:
 
 
-bandicoot_path = pathlib.Path("~/mnt/bandicoot").resolve()
+bandicoot_path = pathlib.Path(os.path.expanduser("~/mnt/bandicoot")).resolve()
 if bandicoot_path.exists():
     # comment out depending on whose computer you are on
     # mike's computer

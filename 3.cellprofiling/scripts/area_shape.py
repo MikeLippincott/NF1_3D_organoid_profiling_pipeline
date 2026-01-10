@@ -27,7 +27,7 @@ image_base_dir = bandicoot_check(
 )
 
 
-# In[ ]:
+# In[2]:
 
 
 if not in_notebook:
@@ -42,9 +42,9 @@ if not in_notebook:
     output_features_subparent_name = arguments_dict["output_features_subparent_name"]
 
 else:
-    well_fov = "E8-5"
-    patient = "NF0018_T6"
-    compartment = "Organoidd"
+    well_fov = "D11-2"
+    patient = "NF0016_T1"
+    compartment = "Nuclei"
     channel = "DNA"
     processor_type = "CPU"
     input_subparent_name = "zstack_images"

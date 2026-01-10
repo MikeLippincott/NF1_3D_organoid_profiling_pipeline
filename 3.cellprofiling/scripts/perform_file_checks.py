@@ -39,8 +39,9 @@ else:
 
 patient = "NF0014_T1"
 well_fov = "C4-2"
-# set path to the processed data dir
+per_file = True
 
+# set path to the processed data dir
 image_set_path = pathlib.Path(
     f"{profile_base_dir}/data/{patient}/zstack_images/{well_fov}/"  # just to get channels structure
 )
@@ -255,11 +256,22 @@ for patient in tqdm(patient_ids):
                                 missing_file.split("_")[1]
                             )
                         elif missing_file.split("_")[0] == "SAMMed3D":
-                            featurization_rerun_dict["channel"].append("all")
-                            featurization_rerun_dict["compartment"].append("all")
-                            featurization_rerun_dict["processor_type"].append(
-                                "GPU"
-                            )  # SAMMed3D is always GPU
+                            if not per_file:
+                                featurization_rerun_dict["channel"].append("all")
+                                featurization_rerun_dict["compartment"].append("all")
+                                featurization_rerun_dict["processor_type"].append(
+                                    "GPU"
+                                )  # SAMMed3D is always GPU
+                            else:
+                                featurization_rerun_dict["channel"].append(
+                                    missing_file.split("_")[2]
+                                )
+                                featurization_rerun_dict["compartment"].append(
+                                    missing_file.split("_")[1]
+                                )
+                                featurization_rerun_dict["processor_type"].append(
+                                    "GPU"
+                                )  # SAMMed3D is always GPU
                         else:
                             featurization_rerun_dict["channel"].append(
                                 missing_file.split("_")[2]

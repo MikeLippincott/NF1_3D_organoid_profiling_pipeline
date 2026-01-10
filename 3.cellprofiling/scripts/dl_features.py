@@ -35,7 +35,7 @@ image_base_dir = bandicoot_check(
 logging.basicConfig(level=logging.INFO)
 
 
-# In[3]:
+# In[ ]:
 
 
 if not in_notebook:
@@ -49,10 +49,10 @@ if not in_notebook:
     output_features_subparent_name = arguments_dict["output_features_subparent_name"]
 
 else:
-    well_fov = "F4-1"
-    patient = "NF0035_T1"
-    compartment = "all"
-    channel = "all"
+    well_fov = "D11-2"
+    patient = "NF0016_T1"
+    compartment = "Nuclei"
+    channel = "Mito"
     input_subparent_name = "zstack_images"
     mask_subparent_name = "segmentation_masks"
     output_features_subparent_name = "extracted_features"
@@ -133,7 +133,7 @@ else:
     all_channel_compartment_combinations = [(channel, compartment)]
 
 
-# In[9]:
+# In[ ]:
 
 
 for channel, compartment in all_channel_compartment_combinations:
@@ -190,24 +190,20 @@ for channel, compartment in all_channel_compartment_combinations:
     final_df.to_parquet(output_file, index=False)
     final_df.head()
 
-
-# In[10]:
-
-
-end_mem = psutil.Process(os.getpid()).memory_info().rss / 1024**2
-end_time = time.time()
-get_mem_and_time_profiling(
-    start_mem=start_mem,
-    end_mem=end_mem,
-    start_time=start_time,
-    end_time=end_time,
-    feature_type="SAMMed3D",
-    well_fov=well_fov,
-    patient_id=patient,
-    channel="DNA",
-    compartment=compartment,
-    CPU_GPU="GPU",
-    output_file_dir=pathlib.Path(
-        f"{root_dir}/data/{patient}/extracted_features/run_stats/{well_fov}_SAMMed3D_all_channels_and_compartments_GPU.parquet"
-    ),
-)
+    end_mem = psutil.Process(os.getpid()).memory_info().rss / 1024**2
+    end_time = time.time()
+    get_mem_and_time_profiling(
+        start_mem=start_mem,
+        end_mem=end_mem,
+        start_time=start_time,
+        end_time=end_time,
+        feature_type="SAMMed3D",
+        well_fov=well_fov,
+        patient_id=patient,
+        channel="DNA",
+        compartment=compartment,
+        CPU_GPU="GPU",
+        output_file_dir=pathlib.Path(
+            f"{root_dir}/data/{patient}/extracted_features/run_stats/{well_fov}_SAMMed3D_{channel}_{compartment}_GPU.parquet"
+        ),
+    )

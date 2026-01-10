@@ -1,0 +1,2 @@
+patient	well_fov	input_subparent_name	mask_subparent_name
+NF0018_T6	E11-3	zstack_images	segmentation_masks

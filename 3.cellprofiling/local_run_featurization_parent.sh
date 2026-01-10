@@ -6,6 +6,9 @@ compartment=$3
 channel=$4
 feature=$5
 processor_type=$6
+input_subparent_name=$7
+mask_subparent_name=$8
+output_features_subparent_name=$9
 
 git_root=$(git rev-parse --show-toplevel)
 if [ -z "$git_root" ]; then
@@ -22,7 +25,10 @@ if [ "$feature" == "Neighbors" ]; then
         "$patient" \
         "$well_fov" \
         "$compartment" \
-        "$channel"
+        "$channel" \
+        "$input_subparent_name" \
+        "$mask_subparent_name" \
+        "$output_features_subparent_name"
 fi
 
 if [ "$feature" == "Granularity" ] ; then
@@ -32,7 +38,10 @@ if [ "$feature" == "Granularity" ] ; then
         "$well_fov" \
         "$compartment" \
         "$channel" \
-        "CPU"
+        "CPU" \
+        "$input_subparent_name" \
+        "$mask_subparent_name" \
+        "$output_features_subparent_name"
 fi
 
 if [ "$feature" == "Texture" ] ; then
@@ -41,7 +50,10 @@ if [ "$feature" == "Texture" ] ; then
             "$patient" \
             "$well_fov" \
             "$compartment" \
-            "$channel"
+            "$channel" \
+            "$input_subparent_name" \
+            "$mask_subparent_name" \
+            "$output_features_subparent_name"
 fi
 
 
@@ -54,7 +66,10 @@ if [ "$feature" == "AreaSizeShape" ] ; then
             "$well_fov" \
             "$compartment" \
             "$channel" \
-            "$processor_type"
+            "$processor_type" \
+            "$input_subparent_name" \
+            "$mask_subparent_name" \
+            "$output_features_subparent_name"
     else
         echo "Running GPU version for AreaSizeShape"
         bash "$git_root"/3.cellprofiling/slurm_scripts/run_area_shape_child.sh \
@@ -62,7 +77,10 @@ if [ "$feature" == "AreaSizeShape" ] ; then
             "$well_fov" \
             "$compartment" \
             "$channel" \
-            "$processor_type"
+            "$processor_type" \
+            "$input_subparent_name" \
+            "$mask_subparent_name" \
+            "$output_features_subparent_name"
     fi
 fi
 if [ "$feature" == "Colocalization" ] ; then
@@ -73,7 +91,10 @@ if [ "$feature" == "Colocalization" ] ; then
             "$well_fov" \
             "$compartment" \
             "$channel" \
-            "$processor_type"
+            "$processor_type" \
+            "$input_subparent_name" \
+            "$mask_subparent_name" \
+            "$output_features_subparent_name"
     else
         echo "Running GPU version for Colocalization"
         bash "$git_root"/3.cellprofiling/slurm_scripts/run_colocalization_child.sh \
@@ -81,7 +102,10 @@ if [ "$feature" == "Colocalization" ] ; then
             "$well_fov" \
             "$compartment" \
             "$channel" \
-            "$processor_type"
+            "$processor_type" \
+            "$input_subparent_name" \
+            "$mask_subparent_name" \
+            "$output_features_subparent_name"
     fi
 fi
 
@@ -93,7 +117,10 @@ if [ "$feature" == "Intensity" ] ; then
             "$well_fov" \
             "$compartment" \
             "$channel" \
-            "$processor_type"
+            "$processor_type" \
+            "$input_subparent_name" \
+            "$mask_subparent_name" \
+            "$output_features_subparent_name"
     else
         echo "Running GPU version for Intensity"
         bash "$git_root"/3.cellprofiling/slurm_scripts/run_intensity_child.sh \
@@ -101,8 +128,23 @@ if [ "$feature" == "Intensity" ] ; then
                 "$well_fov" \
                 "$compartment" \
                 "$channel" \
-                "$processor_type"
+                "$processor_type" \
+            "$input_subparent_name" \
+            "$mask_subparent_name" \
+            "$output_features_subparent_name"
     fi
+fi
+
+if [ "$feature" == "sammed3D" ] ; then
+    echo "Running sammed3D feature extraction"
+    bash "$git_root"/3.cellprofiling/slurm_scripts/run_sammed3D_child.sh \
+            "$patient" \
+            "$well_fov" \
+            "$compartment" \
+            "$channel"  \
+            "$input_subparent_name" \
+            "$mask_subparent_name" \
+            "$output_features_subparent_name"
 fi
 
 echo "Featurization done"

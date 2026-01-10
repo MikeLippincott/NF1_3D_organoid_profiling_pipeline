@@ -14,10 +14,6 @@ from arg_parsing_utils import check_for_missing_args, parse_args
 from notebook_init_utils import bandicoot_check, init_notebook
 
 root_dir, in_notebook = init_notebook()
-if in_notebook:
-    from tqdm.notebook import tqdm
-else:
-    from tqdm import tqdm
 
 from file_checking import check_number_of_files
 from loading_classes import ImageSetLoader
@@ -58,6 +54,8 @@ patient_ids = pd.read_csv(
     patient_id_file_path, header=None, names=["patient_id"]
 ).patient_id.tolist()
 
+patient_ids = [patient]  # for testing
+
 
 # In[4]:
 
@@ -67,7 +65,6 @@ channel_mapping = {
     "AGP": "488",
     "ER": "555",
     "Mito": "640",
-    "BF": "TRANS",
     "Nuclei": "nuclei_",
     "Cell": "cell_",
     "Cytoplasm": "cytoplasm_",
@@ -87,17 +84,20 @@ channel_combinations = list(itertools.combinations(channels, 2))
 
 # For each well fov there should be the following number of files:
 # Of course this depends on if both CPU and GPU versions are run, but the CPU version is always run.
+#
+# No BF here!
+#
 # | Feature Type | No. Compartments | No. Channels | No. Processors | Total No. Files |
 # |--------------|------------------|---------------|----------------|-----------------|
 # | AreaSizeShape | 4 | 1 | 2 | 8 |
-# | Colocalization | 4 | 10 | 2 | 80 |
-# | Granularity | 4 | 5 | 1 | 20 |
-# | Intensity | 4 | 5 | 2 | 40 |
+# | Colocalization | 4 | 6 | 2 | 48 |
+# | Granularity | 4 | 4 | 1 | 16 |
+# | Intensity | 4 | 4 | 2 | 32 |
 # | Neighbors | 1 | 1 | 1 | 1 |
-# | SAMMed3D | 4 | 5 | 1 | 20 |
-# | Texture | 4 | 5 | 1 | 20 |
+# | SAMMed3D | 4 | 4 | 1 | 16 |
+# | Texture | 4 | 4 | 1 | 16 |
 #
-# Total no. files per well fov = 189
+# Total no. files per well fov = 137
 #
 # ### OR
 # For CPU only:
@@ -105,14 +105,13 @@ channel_combinations = list(itertools.combinations(channels, 2))
 # | Feature Type | No. Compartments | No. Channels | No. Processors | Total No. Files |
 # |--------------|------------------|---------------|----------------|-----------------|
 # | AreaSizeShape | 4 | 1 | 1 | 4 |
-# | Colocalization | 4 | 10 | 1 | 40 |
-# | Granularity | 4 | 5 | 1 | 20 |
-# | Intensity | 4 | 5 | 1 | 20 |
+# | Colocalization | 4 | 6 | 1 | 24 |
+# | Granularity | 4 | 4 | 1 | 16 |
+# | Intensity | 4 | 4 | 1 | 16 |
 # | Neighbors | 1 | 1 | 1 | 1 |
-# | SAMMed3D | 4 | 5 | 1 | 20 |
-# | Texture | 4 | 5 | 1 | 20 |
-#
-# Total no. files per well fov = 125
+# | SAMMed3D | 4 | 4 | 1 | 16 |
+# | Texture | 4 | 4 | 1 | 16 |
+# Total no. files per well fov = 93
 #
 #
 
@@ -125,6 +124,7 @@ feature_types = [
     "Granularity",
     "Intensity",
     "Neighbors",
+    "SAMMed3D",
     "Texture",
 ]
 
@@ -149,12 +149,15 @@ for compartment in compartments:
     for processor_type in processor_types:
         feature_list.append(f"AreaSizeShape_{compartment}_{processor_type}_features")
 # colocalization
+coloc_count = 0
 for channel in channel_combinations:
     for compartment in compartments:
         for processor_type in processor_types:
+            coloc_count += 1
             feature_list.append(
                 f"Colocalization_{compartment}_{channel[0]}.{channel[1]}_{processor_type}_features"
             )
+print(coloc_count)
 # granularity
 for channel in channels:
     for compartment in compartments:
@@ -169,8 +172,7 @@ for channel in channels:
 # SAMMed3d
 for channel in channels:
     for compartment in compartments:
-        for processor_type in processor_types:
-            feature_list.append(f"SAMMed3D_{compartment}_{channel}_GPU_features")
+        feature_list.append(f"SAMMed3D_{compartment}_{channel}_GPU_features")
 # neighbors
 feature_list.append("Neighbors_Nuclei_DNA_CPU_features")
 # texture
@@ -199,21 +201,60 @@ featurization_rerun_dict = {
 # In[9]:
 
 
+dict_of_subdir_combinations = {
+    "input_subparent_name": [],
+    "mask_subparent_name": [],
+    "output_features_subparent_name": [],
+}
+convolution_range = [x for x in range(1, 26)]
+convolution_range = convolution_range + [50, 75, 100]
+for convolution_value in convolution_range:
+    dict_of_subdir_combinations["input_subparent_name"].append(
+        f"convolution_{convolution_value}"
+    )
+    dict_of_subdir_combinations["mask_subparent_name"].append("segmentation_masks")
+    dict_of_subdir_combinations["output_features_subparent_name"].append(
+        f"convolution_{convolution_value}_extracted_features"
+    )
+dict_of_subdir_combinations["input_subparent_name"].append("zstack_images")
+dict_of_subdir_combinations["mask_subparent_name"].append("segmentation_masks")
+dict_of_subdir_combinations["output_features_subparent_name"].append(
+    "extracted_features"
+)
+dict_of_subdir_combinations["input_subparent_name"].append("deconvolved_images")
+dict_of_subdir_combinations["mask_subparent_name"].append(
+    "deconvolved_segmentation_masks"
+)
+dict_of_subdir_combinations["output_features_subparent_name"].append(
+    "deconvolved_images_extracted_features"
+)
+
+
+# In[10]:
+
+
 total_files = 0
 files_present = 0
-for patient in tqdm(patient_ids):
+for patient in patient_ids:
     well_fovs = pathlib.Path(
         f"{profile_base_dir}/data/{patient}/zstack_images/"
     ).resolve()
-
     # perform checks for each directory
     featurization_data_dirs = list(well_fovs.glob("*"))
 
+    # set the data dirs to just one for testing
+    featurization_data_dirs = [
+        pathlib.Path(f"{profile_base_dir}/data/{patient}/zstack_images/C4-2")
+    ]  # for convolution testing only
+
     for dir in featurization_data_dirs:
-        if dir.name != "run_stats":
+        for subdir_idx in range(
+            len(dict_of_subdir_combinations["input_subparent_name"])
+        ):
             dir = pathlib.Path(
-                f"{profile_base_dir}/data/{patient}/extracted_features/{dir.name}"
+                f"{profile_base_dir}/data/{patient}/{dict_of_subdir_combinations['output_features_subparent_name'][subdir_idx]}/{dir.name}"
             ).resolve()
+
             total_files += len(feature_list)
             if not check_number_of_files(dir, len(feature_list)):
                 # find the missing files
@@ -241,9 +282,6 @@ for patient in tqdm(patient_ids):
                             featurization_rerun_dict["processor_type"].append(
                                 missing_file.split("_")[3]
                             )
-                            featurization_rerun_dict["compartment"].append(
-                                missing_file.split("_")[1]
-                            )
                         elif missing_file.split("_")[0] == "AreaSizeShape":
                             featurization_rerun_dict["channel"].append(
                                 "DNA"
@@ -251,15 +289,6 @@ for patient in tqdm(patient_ids):
                             featurization_rerun_dict["processor_type"].append(
                                 missing_file.split("_")[2]
                             )
-                            featurization_rerun_dict["compartment"].append(
-                                missing_file.split("_")[1]
-                            )
-                        elif missing_file.split("_")[0] == "SAMMed3D":
-                            featurization_rerun_dict["channel"].append("all")
-                            featurization_rerun_dict["compartment"].append("all")
-                            featurization_rerun_dict["processor_type"].append(
-                                "GPU"
-                            )  # SAMMed3D is always GPU
                         else:
                             featurization_rerun_dict["channel"].append(
                                 missing_file.split("_")[2]
@@ -267,29 +296,30 @@ for patient in tqdm(patient_ids):
                             featurization_rerun_dict["processor_type"].append(
                                 missing_file.split("_")[3]
                             )
-                            featurization_rerun_dict["compartment"].append(
-                                missing_file.split("_")[1]
-                            )
                         featurization_rerun_dict["patient"].append(patient)
                         featurization_rerun_dict["well_fov"].append(dir.name)
                         featurization_rerun_dict["feature"].append(
                             missing_file.split("_")[0]
                         )
-
+                        featurization_rerun_dict["compartment"].append(
+                            missing_file.split("_")[1]
+                        )
                         featurization_rerun_dict["input_subparent_name"].append(
-                            "zstack_images"
+                            f"{dict_of_subdir_combinations['input_subparent_name'][subdir_idx]}"
                         )
                         featurization_rerun_dict["mask_subparent_name"].append(
-                            "segmentation_masks"
+                            f"{dict_of_subdir_combinations['mask_subparent_name'][subdir_idx]}"
                         )
                         featurization_rerun_dict[
                             "output_features_subparent_name"
-                        ].append("extracted_features")
+                        ].append(
+                            f"{dict_of_subdir_combinations['output_features_subparent_name'][subdir_idx]}"
+                        )
             else:
                 files_present += len([f.stem for f in dir.glob("*") if f.is_file()])
 
 
-# In[10]:
+# In[11]:
 
 
 print(f"Total files expected: {total_files}")
@@ -303,43 +333,10 @@ else:
     )
 
 
-# In[11]:
-
-
-df = pd.DataFrame(featurization_rerun_dict)
-df.drop_duplicates(inplace=True)
-
-# sort the df by featyre type then patient then well fov
-df = df.sort_values(by=["feature", "patient", "well_fov"])
-# put SAMMed3d features at the bottom of the df
-features_to_drop = [
-    "SAMMed3D",
-    "Granularity",
-    "Texture",
-    "Colocalization",
-]
-sammed3d_df = df[df["feature"] == "SAMMed3D"]
-granularity_df = df[df["feature"] == "Granularity"]
-texture_features_df = df[df["feature"] == "Texture"]
-colocalization_df = df[df["feature"] == "Colocalization"]
-# drop all features from df that exists in the above dfs
-
-other_features_df = df[~df["feature"].isin(features_to_drop)]
-df = pd.concat(
-    [
-        other_features_df,
-        texture_features_df,
-        colocalization_df,
-        granularity_df,
-        sammed3d_df,
-    ],
-    ignore_index=True,
-)
-
-
 # In[12]:
 
 
+df = pd.DataFrame(featurization_rerun_dict)
 df.to_csv(rerun_combinations_path, sep="\t", index=False)
 df.head()
 
@@ -347,10 +344,4 @@ df.head()
 # In[13]:
 
 
-df.groupby(["patient"]).count()
-
-
-# In[14]:
-
-
-df.groupby(["patient", "well_fov"]).count()
+df.groupby(["patient", "input_subparent_name", "well_fov", "feature"]).count()

@@ -70,7 +70,6 @@ NF0014_T1	C10-1	zstack_images	segmentation_masks
 NF0014_T1	D11-1	zstack_images	segmentation_masks
 NF0014_T1	E3-2	zstack_images	segmentation_masks
 NF0014_T1	E11-2	zstack_images	segmentation_masks
-NF0014_T1	F11-3	zstack_images	segmentation_masks
 NF0014_T1	E6-1	zstack_images	segmentation_masks
 NF0014_T1	D10-1	zstack_images	segmentation_masks
 NF0014_T1	C11-1	zstack_images	segmentation_masks
@@ -598,7 +597,6 @@ NF0016_T1	D10-2	zstack_images	segmentation_masks
 NF0016_T1	D9-3	zstack_images	segmentation_masks
 NF0016_T1	E10-3	zstack_images	segmentation_masks
 NF0016_T1	D4-2	zstack_images	segmentation_masks
-NF0016_T1	D8-1	zstack_images	segmentation_masks
 NF0016_T1	F7-1	zstack_images	segmentation_masks
 NF0016_T1	D2-1	zstack_images	segmentation_masks
 NF0016_T1	E11-4	zstack_images	segmentation_masks
@@ -2088,14 +2086,6 @@ NF0037_T1	D11-3	zstack_images	segmentation_masks
 NF0037_T1	C2-3	zstack_images	segmentation_masks
 NF0037_T1	F3-6	zstack_images	segmentation_masks
 NF0037_T1	C8-4	zstack_images	segmentation_masks
-NF0037_T1-Z-1	F4-2	zstack_images	segmentation_masks
-NF0037_T1-Z-1	F4-3	zstack_images	segmentation_masks
-NF0037_T1-Z-0.5	F4-2	zstack_images	segmentation_masks
-NF0037_T1-Z-0.5	F4-3	zstack_images	segmentation_masks
-NF0037_T1-Z-0.2	F4-2	zstack_images	segmentation_masks
-NF0037_T1-Z-0.2	F4-3	zstack_images	segmentation_masks
-NF0037_T1-Z-0.1	F4-2	zstack_images	segmentation_masks
-NF0037_T1-Z-0.1	F4-3	zstack_images	segmentation_masks
 NF0037_T1_CQ1	B9-13	zstack_images	segmentation_masks
 NF0037_T1_CQ1	F9-9	zstack_images	segmentation_masks
 NF0037_T1_CQ1	D7-13	zstack_images	segmentation_masks

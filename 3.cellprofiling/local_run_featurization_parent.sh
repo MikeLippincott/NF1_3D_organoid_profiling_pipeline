@@ -20,8 +20,8 @@ echo "Patient: $patient, WellFOV: $well_fov, Feature: $feature, Compartment: $co
 
 # regardless of the processor type, texture and neighbors features are run on CPU
 if [ "$feature" == "Neighbors" ]; then
-
-    bash "$git_root"/3.cellprofiling/slurm_scripts/run_neighbors_child.sh \
+    # shellcheck disable=SC1091
+    source "$git_root"/3.cellprofiling/slurm_scripts/run_neighbors_child.sh \
         "$patient" \
         "$well_fov" \
         "$compartment" \
@@ -33,7 +33,8 @@ fi
 
 if [ "$feature" == "Granularity" ] ; then
     echo "Running CPU version for Granularity"
-    bash "$git_root"/3.cellprofiling/slurm_scripts/run_granularity_child.sh \
+    # shellcheck disable=SC1091
+    source "$git_root"/3.cellprofiling/slurm_scripts/run_granularity_child.sh \
         "$patient" \
         "$well_fov" \
         "$compartment" \
@@ -46,7 +47,8 @@ fi
 
 if [ "$feature" == "Texture" ] ; then
     echo "Running texture feature extraction"
-    bash "$git_root"/3.cellprofiling/slurm_scripts/run_texture_child.sh \
+    # shellcheck disable=SC1091
+    source "$git_root"/3.cellprofiling/slurm_scripts/run_texture_child.sh \
             "$patient" \
             "$well_fov" \
             "$compartment" \
@@ -61,7 +63,8 @@ fi
 if [ "$feature" == "AreaSizeShape" ] ; then
     if [ "$processor_type" == "CPU" ]; then
         echo "Running CPU version for AreaSizeShape"
-        bash "$git_root"/3.cellprofiling/slurm_scripts/run_area_shape_child.sh \
+        # shellcheck disable=SC1091
+        source "$git_root"/3.cellprofiling/slurm_scripts/run_area_shape_child.sh \
             "$patient" \
             "$well_fov" \
             "$compartment" \
@@ -72,7 +75,8 @@ if [ "$feature" == "AreaSizeShape" ] ; then
             "$output_features_subparent_name"
     else
         echo "Running GPU version for AreaSizeShape"
-        bash "$git_root"/3.cellprofiling/slurm_scripts/run_area_shape_child.sh \
+        # shellcheck disable=SC1091
+        source "$git_root"/3.cellprofiling/slurm_scripts/run_area_shape_child.sh \
             "$patient" \
             "$well_fov" \
             "$compartment" \
@@ -86,7 +90,8 @@ fi
 if [ "$feature" == "Colocalization" ] ; then
     if [ "$processor_type" == "CPU" ]; then
         echo "Running CPU version for Colocalization"
-        bash "$git_root"/3.cellprofiling/slurm_scripts/run_colocalization_child.sh \
+        # shellcheck disable=SC1091
+        source "$git_root"/3.cellprofiling/slurm_scripts/run_colocalization_child.sh \
             "$patient" \
             "$well_fov" \
             "$compartment" \
@@ -97,7 +102,8 @@ if [ "$feature" == "Colocalization" ] ; then
             "$output_features_subparent_name"
     else
         echo "Running GPU version for Colocalization"
-        bash "$git_root"/3.cellprofiling/slurm_scripts/run_colocalization_child.sh \
+        # shellcheck disable=SC1091
+        source "$git_root"/3.cellprofiling/slurm_scripts/run_colocalization_child.sh \
             "$patient" \
             "$well_fov" \
             "$compartment" \
@@ -112,7 +118,9 @@ fi
 if [ "$feature" == "Intensity" ] ; then
     if [ "$processor_type" == "CPU" ]; then
         echo "Running CPU version for Intensity"
-        bash "$git_root"/3.cellprofiling/slurm_scripts/run_intensity_child.sh \
+
+        # shellcheck disable=SC1091
+        source "$git_root"/3.cellprofiling/slurm_scripts/run_intensity_child.sh \
             "$patient" \
             "$well_fov" \
             "$compartment" \
@@ -123,7 +131,8 @@ if [ "$feature" == "Intensity" ] ; then
             "$output_features_subparent_name"
     else
         echo "Running GPU version for Intensity"
-        bash "$git_root"/3.cellprofiling/slurm_scripts/run_intensity_child.sh \
+        # shellcheck disable=SC1091
+        source "$git_root"/3.cellprofiling/slurm_scripts/run_intensity_child.sh \
                 "$patient" \
                 "$well_fov" \
                 "$compartment" \
@@ -137,7 +146,8 @@ fi
 
 if [ "$feature" == "sammed3D" ] ; then
     echo "Running sammed3D feature extraction"
-    bash "$git_root"/3.cellprofiling/slurm_scripts/run_sammed3D_child.sh \
+    # shellcheck disable=SC1091
+    source "$git_root"/3.cellprofiling/slurm_scripts/run_sammed3D_child.sh \
             "$patient" \
             "$well_fov" \
             "$compartment" \

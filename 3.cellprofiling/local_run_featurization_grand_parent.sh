@@ -1,13 +1,10 @@
 #!/bin/bash
 
-conda activate gff_preprocessing_env
 git_root=$(git rev-parse --show-toplevel)
 if [ -z "$git_root" ]; then
     echo "Error: Could not find the git root directory."
     exit 1
 fi
-
-conda activate GFF_featurization
 
 jupyter nbconvert --to=script --FilesWriter.build_directory=scripts/ notebooks/*.ipynb
 
@@ -44,8 +41,8 @@ while IFS= read -r line; do
     output_features_subparent_name="${parts[8]}"
 
     echo "Patient: $patient, WellFOV: $well_fov, Feature: $feature, Compartment: $compartment, Channel: $channel, UseGPU: $processor_type"
-
-    bash \
+    # shellcheck disable=SC1091
+    source \
         "$git_root"/3.cellprofiling/local_run_featurization_parent.sh \
         "$patient" \
         "$well_fov" \

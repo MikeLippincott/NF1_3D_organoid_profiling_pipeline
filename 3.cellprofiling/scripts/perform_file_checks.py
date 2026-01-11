@@ -324,16 +324,12 @@ df.drop_duplicates(inplace=True)
 # sort the df by featyre type then patient then well fov
 df = df.sort_values(by=["feature", "patient", "well_fov"])
 # put SAMMed3d features at the bottom of the df
-features_to_drop = [
-    "SAMMed3D",
-    "Granularity",
-    "Texture",
-    "Colocalization",
-]
+features_to_drop = ["SAMMed3D", "Granularity", "Texture", "Colocalization", "Neighbors"]
 sammed3d_df = df[df["feature"] == "SAMMed3D"]
 granularity_df = df[df["feature"] == "Granularity"]
 texture_features_df = df[df["feature"] == "Texture"]
 colocalization_df = df[df["feature"] == "Colocalization"]
+neighbors_df = df[df["feature"] == "Neighbors"]
 # drop all features from df that exists in the above dfs
 
 other_features_df = df[~df["feature"].isin(features_to_drop)]
@@ -343,6 +339,7 @@ df = pd.concat(
         texture_features_df,
         colocalization_df,
         granularity_df,
+        neighbors_df,
         sammed3d_df,
     ],
     ignore_index=True,

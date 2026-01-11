@@ -1,0 +1,184 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Process &mdash; Cell Painting Feature Extraction Pipeline 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=8d563738"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Feature Types" href="features/index.html" />
+    <link rel="prev" title="Overview" href="overview.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+
+
+          <a href="index.html" class="icon icon-home">
+            Cell Painting Feature Extraction Pipeline
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Process</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#extraction-workflow">Extraction Workflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#segmentation-strategy">Segmentation Strategy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#feature-extraction-strategy">Feature Extraction Strategy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#computing-approaches">Computing Approaches</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#cpu-based-processing">CPU-Based Processing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#gpu-acceleration">GPU Acceleration</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#libraries-used">Libraries Used</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="features/index.html">Feature Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extraction_math.html">Mathematical Formulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="libraries.html">Libraries</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Cell Painting Feature Extraction Pipeline</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Process</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/process.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <section id="process">
+<h1>Process<a class="headerlink" href="#process" title="Link to this heading"></a></h1>
+<section id="extraction-workflow">
+<h2>Extraction Workflow<a class="headerlink" href="#extraction-workflow" title="Link to this heading"></a></h2>
+<p>The feature extraction process follows these steps:</p>
+<ol class="arabic simple">
+<li><p><strong>Image Loading</strong>: Load 3D image sets from different spectral channels</p></li>
+<li><p><strong>Segmentation</strong>: Identify and segment biological compartments</p></li>
+<li><p><strong>Feature Calculation</strong>: Extract features from segmented regions</p></li>
+<li><p><strong>Output Formatting</strong>: Generate feature matrices for downstream analysis</p></li>
+</ol>
+</section>
+<section id="segmentation-strategy">
+<h2>Segmentation Strategy<a class="headerlink" href="#segmentation-strategy" title="Link to this heading"></a></h2>
+<p>The pipeline uses automated segmentation to identify:</p>
+<ul class="simple">
+<li><p>Object boundaries and spatial extent</p></li>
+<li><p>Subcellular compartments</p></li>
+<li><p>Relationship between compartments</p></li>
+</ul>
+</section>
+<section id="feature-extraction-strategy">
+<h2>Feature Extraction Strategy<a class="headerlink" href="#feature-extraction-strategy" title="Link to this heading"></a></h2>
+<p>Features are extracted for each compartment-channel combination:</p>
+<ul class="simple">
+<li><p><strong>Per-object features</strong>: Properties of individual segmented objects</p></li>
+<li><p><strong>Channel-specific features</strong>: Measurement within specific spectral channels</p></li>
+<li><p><strong>Relational features</strong>: Properties between different channels (colocalization)</p></li>
+</ul>
+</section>
+<section id="computing-approaches">
+<h2>Computing Approaches<a class="headerlink" href="#computing-approaches" title="Link to this heading"></a></h2>
+<p>The implementation supports multiple computing strategies:</p>
+<section id="cpu-based-processing">
+<h3>CPU-Based Processing<a class="headerlink" href="#cpu-based-processing" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Distributed across multiple CPU cores</p></li>
+<li><p>Single image set - channel combination per core</p></li>
+<li><p>Scalable with available processors</p></li>
+</ul>
+</section>
+<section id="gpu-acceleration">
+<h3>GPU Acceleration<a class="headerlink" href="#gpu-acceleration" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Single GPU execution when cluster unavailable</p></li>
+<li><p>Accelerated via RAPIDS libraries (cuPy, cuCIM)</p></li>
+<li><p>Maintains API compatibility with CPU version</p></li>
+</ul>
+</section>
+</section>
+<section id="libraries-used">
+<h2>Libraries Used<a class="headerlink" href="#libraries-used" title="Link to this heading"></a></h2>
+<p>The extraction uses these Python scientific libraries:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://scikit-image.org/">scikit-image</a>: Image processing and analysis</p></li>
+<li><p><a class="reference external" href="https://www.scipy.org/">scipy</a>: Scientific computing</p></li>
+<li><p><a class="reference external" href="https://mahotas.readthedocs.io/">mahotas</a>: Image processing operations</p></li>
+<li><p><a class="reference external" href="https://numpy.org/">numpy</a>: Numerical computing</p></li>
+<li><p><a class="reference external" href="https://docs.cupy.dev/">cupy</a>: GPU-accelerated arrays</p></li>
+<li><p><a class="reference external" href="https://docs.rapids.ai/api/cucim/">cucim</a>: GPU-accelerated image processing</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="overview.html" class="btn btn-neutral float-left" title="Overview" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="features/index.html" class="btn btn-neutral float-right" title="Feature Types" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Way Lab.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>

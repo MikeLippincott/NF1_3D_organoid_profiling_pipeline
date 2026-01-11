@@ -42,8 +42,8 @@ if not in_notebook:
     output_features_subparent_name = arguments_dict["output_features_subparent_name"]
 
 else:
-    well_fov = "D11-2"
-    patient = "NF0016_T1"
+    well_fov = "E11-3"
+    patient = "NF0018_T6"
     compartment = "Nuclei"
     channel = "DNA"
     processor_type = "CPU"

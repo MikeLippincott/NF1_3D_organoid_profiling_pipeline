@@ -22,7 +22,6 @@ from notebook_init_utils import bandicoot_check, init_notebook
 image_base_dir = bandicoot_check(
     pathlib.Path(os.path.expanduser("~/mnt/bandicoot")).resolve(), root_dir
 )
-print(image_base_dir)
 
 
 # In[2]:
@@ -40,10 +39,10 @@ if not in_notebook:
     output_features_subparent_name = arguments_dict["output_features_subparent_name"]
 
 else:
-    well_fov = "E8-5"
-    patient = "NF0018_T6"
-    channel = "ER"
-    compartment = "Nuclei"
+    well_fov = "D2-3"
+    patient = "SARCO361_T1"
+    channel = "Mito"
+    compartment = "Cytoplasm"
     processor_type = "CPU"
     input_subparent_name = "zstack_images"
     mask_subparent_name = "segmentation_masks"
@@ -106,6 +105,12 @@ object_loader = ObjectLoader(
     channel,
     compartment,
 )
+print(object_loader.image.shape, object_loader.label_image.shape)
+
+
+# In[7]:
+
+
 if processor_type == "GPU":
     output_dict = measure_3D_intensity_gpu(object_loader)
 elif processor_type == "CPU":
@@ -140,7 +145,7 @@ output_file.parent.mkdir(parents=True, exist_ok=True)
 final_df.to_parquet(output_file)
 
 
-# In[7]:
+# In[ ]:
 
 
 end_mem = psutil.Process(os.getpid()).memory_info().rss / 1024**2

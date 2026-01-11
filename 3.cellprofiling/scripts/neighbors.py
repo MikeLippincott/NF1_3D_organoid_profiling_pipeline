@@ -171,7 +171,7 @@ for organoid_id in organoid_loader.object_ids:
             object_ids_dict[organoid_id].append(nuclei_id)
 
 
-# In[ ]:
+# In[9]:
 
 
 for organoid_id in object_ids_dict.keys():
@@ -192,7 +192,7 @@ for organoid_id in object_ids_dict.keys():
         fig2 = plot_distance_distributions(results, N_SHELLS)
 
 
-# In[12]:
+# In[10]:
 
 
 # merge the two dataframes
@@ -203,7 +203,7 @@ for col in merged_df.columns:
 merged_df.head()
 
 
-# In[13]:
+# In[11]:
 
 
 if not merged_df.empty:
@@ -218,7 +218,7 @@ merged_df.to_parquet(output_file)
 merged_df.head()
 
 
-# In[14]:
+# In[12]:
 
 
 end_mem = psutil.Process(os.getpid()).memory_info().rss / 1024**2

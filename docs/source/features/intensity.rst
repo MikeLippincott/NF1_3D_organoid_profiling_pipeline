@@ -1,19 +1,19 @@
-=================
+=======================================================================
 Intensity Features
-=================
+=======================================================================
 
 Description
-===========
+=================================================================
 
 Intensity features quantify the pixel/voxel value distributions within
 segmented objects. These measurements capture both overall intensity levels
 and spatial intensity patterns.
 
 Features Extracted
-==================
+========================================================================
 
 Location-Based Intensity
-------------------------
+----------------------------------------------------------
 
 .. list-table::
    :header-rows: 1
@@ -31,7 +31,7 @@ Location-Based Intensity
      - Coordinates of maximum intensity
 
 Statistical Measures
---------------------
+------------------------------------------------------
 
 .. list-table::
    :header-rows: 1
@@ -57,7 +57,7 @@ Statistical Measures
      - 75th percentile
 
 Edge-Based Measurements
------------------------
+---------------------------------------------------------
 
 .. list-table::
    :header-rows: 1
@@ -79,7 +79,7 @@ Edge-Based Measurements
      - Number of edge voxels
 
 Other Measurements
--------------------
+--------------------------------------
 
 .. list-table::
    :header-rows: 1
@@ -95,7 +95,7 @@ Other Measurements
      - Distance between geometric and intensity centers
 
 Calculation Method
-==================
+========================================================================
 
 Intensity features are extracted from 3D voxel data:
 
@@ -105,7 +105,7 @@ Intensity features are extracted from 3D voxel data:
 4. **Edge Detection**: Identify and measure boundary voxel properties
 
 Data Source
-===========
+=================================================================
 
 All intensity features are computed from the 3D voxel intensity data
 of the selected channel within the segmented object boundary.

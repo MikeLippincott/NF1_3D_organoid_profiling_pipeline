@@ -1,16 +1,16 @@
-===========================
+===============================================================
 Area.Size.Shape Features
-===========================
+===============================================================
 
 Description
-===========
+===============================================
 
 Area.Size.Shape features characterize the geometric properties and spatial
 extent of segmented objects. These measurements are computed using both mesh
 and voxel-based approaches.
 
 Features Extracted
-==================
+======================================================
 
 .. list-table:: Area.Size.Shape Feature Measurements
    :header-rows: 1
@@ -44,7 +44,7 @@ Features Extracted
      - Total surface area of the 3D object
 
 Calculation Method
-==================
+======================================================
 
 These features use 3D mesh reconstruction and voxel analysis:
 
@@ -54,7 +54,7 @@ These features use 3D mesh reconstruction and voxel analysis:
 4. **Spatial Statistics**: Calculate centroid and bounding box properties
 
 Applications
-============
+================================================
 
 Area.Size.Shape features are useful for:
 

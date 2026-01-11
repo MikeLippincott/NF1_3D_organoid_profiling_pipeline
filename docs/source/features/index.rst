@@ -1,6 +1,6 @@
-===============
+=====================================================================
 Feature Types
-===============
+=====================================================================
 
 .. toctree::
    :maxdepth: 2
@@ -11,17 +11,17 @@ Feature Types
    texture
    granularity
    neighbors
-   sammedgd
+   sammed3d
 
 Overview
-========
+==============================================================
 
 The pipeline extracts seven distinct feature types from segmented biological
 compartments. Each feature type captures different aspects of cellular and
 subcellular morphology and intensity.
 
 Feature Count Summary
-=====================
+===========================================================================
 
 For a typical imaging experiment with 5 channels and 4 compartment types:
 

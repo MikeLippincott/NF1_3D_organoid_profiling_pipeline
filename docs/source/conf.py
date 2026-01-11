@@ -3,33 +3,34 @@ import os
 import sys
 
 project = "Cell Painting Feature Extraction Pipeline"
-copyright = "2025, Way Lab"
+copyright = "2026, Way Lab"
 author = "Michael J. Lippincott"
 release = "1.0.0"
 
 # Add project root to path
 sys.path.insert(0, os.path.abspath("../.."))
-
 extensions = [
     "sphinx.ext.autodoc",
-    "sphinx.ext.mathjax",
-    "sphinx.ext.intersphinx",
-    "sphinx_rtd_theme",
+    "sphinx.ext.viewcode",
     "sphinx.ext.napoleon",
+    "sphinx_rtd_theme",
+    # 'myst_parser',  # Remove this line if not needed
 ]
 
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 html_theme = "sphinx_rtd_theme"
-html_static_path = []  # Set to empty if no static files, or ensure _static exists
+html_static_path = ["_static"]
 
 html_theme_options = {
     "logo_only": False,
     "prev_next_buttons_location": "bottom",
     "style_external_links": False,
-    "style_nav_header_background": "#2980B9",
+    "vcs_pageview_mode": "",
 }
+
+html_css_files = ["custom.css"]
 
 # MathJax config for proper rendering
 mathjax_path = "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"

@@ -1,44 +1,56 @@
-================================================================================
-3D Feature Extraction for Cell Painting Performed on Organoids
-================================================================================
+===================================================================================
+NF1 3D Organoid Profiling Pipeline Documentation
+===================================================================================
+
+Welcome to the NF1 3D Organoid Profiling Pipeline documentation. This pipeline provides a comprehensive workflow for processing and analyzing 3D organoid imaging data.
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Getting Started
 
-   overview
-   process
-   features/index
-   extraction_math
-   libraries
+   introduction
+   installation
+   quick_start
 
-Welcome to the documentation for the 3D feature extraction pipeline. This guide
-explains the features being extracted and the methodology behind extraction from
-3D image sets.
+.. toctree::
+   :maxdepth: 2
+   :caption: Modules
 
-An image set is a collection of 3D images representing the same object but
-captured using different light spectra (channels).
+   modules/preprocessing
+   modules/qc
+   modules/segmentation
+   modules/featurization
+   modules/profile_processing
+   modules/eda
 
-Quick Start
-===========
+.. toctree::
+   :maxdepth: 2
+   :caption: Features
 
-To get started with understanding the features:
+   features/areasizeshape
+   features/colocalization
+   features/intensity
+   features/neighbors
+   features/texture
+   features/granularity
 
-1. Read the :doc:`overview` for a high-level introduction
-2. Review the :doc:`process` to understand the extraction workflow
-3. Explore :doc:`features/index` to learn about each feature type
-4. Check :doc:`extraction_math` for the mathematical formulation
+.. toctree::
+   :maxdepth: 2
+   :caption: API Reference
 
-Installation
-============
+   api/utils
+   api/loading_classes
 
-To build this documentation locally:
+.. toctree::
+   :maxdepth: 1
+   :caption: Additional Resources
 
-.. code-block:: bash
+   workflow
+   faq
 
-   pip install sphinx sphinx-rtd-theme
-   cd docs
-   make html
+Indices and tables
+====================================
 
-Then open ``docs/build/html/index.html`` in your browser.
-
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`

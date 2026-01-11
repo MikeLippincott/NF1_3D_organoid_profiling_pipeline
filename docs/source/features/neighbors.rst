@@ -1,15 +1,15 @@
-================
+=================================================
 Neighbors Features
-================
+=================================================
 
 Description
-===========
+============================================
 
 Neighbors features quantify spatial relationships and adjacency patterns
 between segmented objects within the image volume.
 
 Current Implementation
-======================
+=======================================================
 
 The neighbors feature set currently captures:
 
@@ -17,12 +17,12 @@ The neighbors feature set currently captures:
 * Spatial adjacency statistics
 
 Total Features
---------------
+------------------------------------------------
 
 Currently **2 neighbors features** are extracted per image set.
 
 Future Extensions
-=================
+==================================================
 
 This feature category is designed for expansion to include:
 
@@ -33,7 +33,7 @@ This feature category is designed for expansion to include:
 * Clustering coefficients
 
 Applications
-=============
+==============================================
 
 Neighbors features support analysis of:
 

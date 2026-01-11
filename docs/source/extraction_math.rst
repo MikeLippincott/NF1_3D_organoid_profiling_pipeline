@@ -1,12 +1,12 @@
-===================
+====================================================
 Mathematical Formulation
-===================
+====================================================
 
 Feature Extraction Equations
-============================
+===============================================================
 
 Single-Channel Features
------------------------
+-----------------------------------------------------------
 
 For features that depend on a single channel within a compartment:
 
@@ -21,7 +21,7 @@ Where:
 * :math:`M_o` = 3D binary mask for object :math:`o`
 
 Multi-Channel Features (Colocalization)
-----------------------------------------
+-------------------------------------------------------------------------
 
 For features comparing two channels:
 
@@ -30,7 +30,7 @@ For features comparing two channels:
    F_{c_1,c_2,o,f} = \text{colocalize}(I_{c_1}, I_{c_2}, M_o)
 
 Total Feature Count
--------------------
+---------------------------------------------------------------
 
 The total number of features extracted is:
 
@@ -59,7 +59,7 @@ Where:
    N_{\text{total}} = n_o \times n_c \times n_f + n_o \times \frac{n_c(n_c - 1)}{2} \times n_{f,coloc} + n_{\text{special}}
 
 Symbol Definitions
-==================
+======================================================================================
 
 .. list-table::
    :header-rows: 1
@@ -79,7 +79,7 @@ Symbol Definitions
      - Number of colocalization features per channel pair (32)
 
 Calculation Example
-===================
+======================================================================
 
 With standard parameters:
 

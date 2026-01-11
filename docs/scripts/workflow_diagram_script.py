@@ -103,9 +103,8 @@ create_box(
 )
 create_arrow(ax, 5, 14.2, 5, 13.4)
 
-create_box(ax, 2.5, 12.6, 2.5, 0.6, "Blur Detection", color_process, fontsize=8)
-create_box(ax, 5, 12.6, 2.5, 0.6, "Saturation Check", color_process, fontsize=8)
-create_box(ax, 7.5, 12.6, 2.5, 0.6, "SNR Analysis", color_process, fontsize=8)
+create_box(ax, 3.5, 12.6, 2.5, 0.6, "Blur Detection", color_process, fontsize=8)
+create_box(ax, 6.5, 12.6, 2.5, 0.6, "Saturation Check", color_process, fontsize=8)
 
 ax.text(5, 11.8, "↓", fontsize=20, ha="center")
 create_box(ax, 5, 11.1, 3, 0.8, "QC Flags & Reports", color_decision)
@@ -154,7 +153,7 @@ create_box(ax, 6.8, 2.2, 1.5, 0.5, "Neighbors", color_process, fontsize=7)
 create_box(ax, 8.3, 2.2, 1.5, 0.5, "DL Features", color_process, fontsize=7)
 
 ax.text(5, 1.4, "↓", fontsize=20, ha="center")
-create_box(ax, 5, 0.7, 3, 0.8, "Feature Matrices (CSV/SQLite)", color_output)
+create_box(ax, 5, 0.7, 3, 0.8, "Feature Matrices (Parquets)", color_output)
 
 # Create legend
 fig.text(0.12, 0.02, "© NF1 Organoid Profiling Pipeline", fontsize=8, style="italic")
@@ -168,74 +167,3 @@ plt.savefig(
 )
 print("Workflow diagram saved to docs/source/_static/workflow_diagram.png")
 plt.close()
-
-# Create a second figure for downstream analysis
-fig, ax = plt.subplots(1, 1, figsize=(12, 10))
-ax.set_xlim(0, 10)
-ax.set_ylim(0, 14)
-ax.axis("off")
-
-ax.text(5, 13, "Downstream Analysis Stages", ha="center", fontsize=14, weight="bold")
-
-# Stage 4
-create_box(
-    ax,
-    5,
-    11.5,
-    3.5,
-    0.8,
-    "Stage 4: Profile Processing\n(4.processing_image_based_profiles)",
-    color_analysis,
-    fontsize=9,
-)
-create_arrow(ax, 5, 11.1, 5, 10.3)
-
-create_box(ax, 5, 9.7, 3, 0.8, "Aggregated Profiles (Parquet)", color_output)
-create_arrow(ax, 5, 9.3, 5, 8.6)
-
-# Stage 5
-create_box(
-    ax,
-    5,
-    8,
-    3.5,
-    0.8,
-    "Stage 5: Exploratory Analysis\n(5.EDA)",
-    color_analysis,
-    fontsize=9,
-)
-create_arrow(ax, 5, 7.6, 5, 6.8)
-
-create_box(ax, 2, 6, 2.2, 0.6, "mAP Analysis", color_analysis, fontsize=8)
-create_box(ax, 5, 6, 2.2, 0.6, "UMAP/t-SNE", color_analysis, fontsize=8)
-create_box(ax, 8, 6, 2.2, 0.6, "Hit Detection", color_analysis, fontsize=8)
-
-ax.text(5, 5.2, "↓", fontsize=20, ha="center")
-create_box(ax, 5, 4.5, 3, 0.8, "Analysis Results & Figures", color_output)
-create_arrow(ax, 5, 4.1, 5, 3.4)
-
-# Stage 6
-create_box(
-    ax,
-    5,
-    2.8,
-    3.5,
-    0.8,
-    "Stage 6: Interactive Visualization\n(6.dynamic_viz_Rshiny)",
-    color_analysis,
-    fontsize=9,
-)
-create_arrow(ax, 5, 2.4, 5, 1.6)
-
-create_box(ax, 5, 1, 3, 0.8, "Interactive Shiny Web App", color_output)
-
-plt.tight_layout()
-plt.savefig(
-    "/home/lippincm/Documents/NF1_3D_organoid_profiling_pipeline/docs/source/_static/downstream_analysis.png",
-    dpi=300,
-    bbox_inches="tight",
-    facecolor="white",
-)
-print(
-    "Downstream analysis diagram saved to docs/source/_static/downstream_analysis.png"
-)

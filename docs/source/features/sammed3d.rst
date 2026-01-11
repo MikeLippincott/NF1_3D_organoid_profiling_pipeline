@@ -7,6 +7,7 @@ Description
 
 SAM-Med3D features are derived from Segment Anything Model - Medical 3D
 (SAM-Med3D), a foundation model for 3D medical image segmentation.
+Doi: https://doi.org/10.1109/tnnls.2025.3586694
 
 Purpose
 ==================
@@ -17,6 +18,9 @@ SAM-Med3D features provide:
 * Pre-trained feature representations
 * Segmentation confidence metrics
 * Alternative segmentation approaches
+
+Currently we extract 384 CLS token features from the SAM-Med3D model.
+These are black-box features learned by the model during training on large-scale
 
 Current Status
 ===============================================

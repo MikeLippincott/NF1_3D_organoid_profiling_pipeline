@@ -21,17 +21,6 @@ Total Features
 
 Currently **2 neighbors features** are extracted per image set.
 
-Future Extensions
-==================================================
-
-This feature category is designed for expansion to include:
-
-* Number of neighboring objects
-* Distance to nearest neighbor
-* Contact surface area metrics
-* 3D spatial arrangement patterns
-* Clustering coefficients
-
 Applications
 ==============================================
 

@@ -22,9 +22,9 @@ Location-Based Intensity
    * - Feature
      - Description
    * - CM.X / CM.Y / CM.Z
-     - Center of mass in each spatial dimension
+     - Average intensity-weighted coordinates in each spatial dimension
    * - CMI.X / CMI.Y / CMI.Z
-     - Inverse center of mass in each dimension
+     - Center of mass intensity in each spatial dimension
    * - I.X / I.Y / I.Z
      - Integrated intensity along each axis
    * - MAX.X / MAX.Y / MAX.Z
@@ -95,18 +95,20 @@ Other Measurements
      - Distance between geometric and intensity centers
 
 Calculation Method
-========================================================================
+======================================================
 
-Intensity features are extracted from 3D voxel data:
+Intensity features are computed as follows:
 
-1. **Voxel Extraction**: Extract all voxel values within segmented region
-2. **Statistical Computation**: Calculate mean, median, std, quartiles
-3. **Spatial Analysis**: Determine center of mass and intensity gradients
-4. **Edge Detection**: Identify and measure boundary voxel properties
+1. **Segmentation Masking**: Apply object masks to isolate pixel/voxel values
+2. **Statistical Computation**: Calculate mean, median, max, min, std, etc.
+3. **Spatial Analysis**: Determine intensity-weighted coordinates and gradients
+4. **Edge Detection**: Identify edge pixels/voxels and compute edge statistics
 
-Data Source
-=================================================================
+Applications
+===================================================
 
-All intensity features are computed from the 3D voxel intensity data
-of the selected channel within the segmented object boundary.
-
+Intensity features are useful for:
+* Quantifying fluorescence levels within cellular structures
+* Detecting changes in protein expression
+* Characterizing subcellular localization patterns
+* Identifying phenotypic alterations due to treatments

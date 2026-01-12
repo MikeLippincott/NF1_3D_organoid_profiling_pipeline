@@ -311,7 +311,7 @@ if total_files == 0:
     print("No files were expected, so percent present is undefined.")
 else:
     print(
-        "Percent of files present:", np.round(files_present / total_files * 100, 2), "%"
+        "Percent of files present:", np.round(files_present / total_files * 100, 3), "%"
     )
 
 
@@ -359,10 +359,7 @@ df.head()
 df.groupby(["patient"]).count()
 
 
-# In[16]:
+# In[14]:
 
 
 df.groupby(["feature"]).count()
-
-
-# In[ ]:

@@ -348,7 +348,8 @@ def classify_cells_into_shells(
             "distances_from_exterior": [],
             "normalized_distances_from_center": [],
         }
-        return results, None
+        centroid = None
+        return results, centroid
     n_cells = len(coords_array)
     centroid = calculate_centroid(coords_array)
 

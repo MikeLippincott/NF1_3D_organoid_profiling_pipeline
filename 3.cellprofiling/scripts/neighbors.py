@@ -48,8 +48,8 @@ if not in_notebook:
     output_features_subparent_name = arguments_dict["output_features_subparent_name"]
 
 else:
-    well_fov = "D4-1"
-    patient = "NF0016_T1"
+    well_fov = "C11-6"
+    patient = "SARCO361_T1"
     channel = "DNA"
     compartment = "Nuclei"
     processor_type = "CPU"
@@ -155,52 +155,65 @@ organoid_mask = image_set_loader.image_set_dict["Organoid"]
 nuclei_mask = image_set_loader.image_set_dict["Nuclei"]
 # get nuclei masks that are only in the organoid
 object_ids_dict = {}
-for organoid_id in organoid_loader.object_ids:
-    object_ids_dict[organoid_id] = []
-    organoid_mask_instance = organoid_mask.copy()
-    organoid_mask_instance[organoid_mask_instance != organoid_id] = 0
-    organoid_mask_instance[organoid_mask_instance == organoid_id] = 1
-    # get only nulcei objects that are within the organoid
-    for nuclei_id in nuclei_loader.object_ids:
-        nuclei_mask_instance = nuclei_mask.copy()
-        nuclei_mask_instance[nuclei_mask_instance != nuclei_id] = 0
-        nuclei_mask_instance[nuclei_mask_instance == nuclei_id] = 1
-        # check if any overlap
-        overlap = np.logical_and(organoid_mask_instance, nuclei_mask_instance)
-        if np.sum(overlap) > 0:
-            object_ids_dict[organoid_id].append(nuclei_id)
+if len(organoid_loader.object_ids) == 0:
+    object_ids_dict = {}
+else:
+    for organoid_id in organoid_loader.object_ids:
+        object_ids_dict[organoid_id] = []
+        organoid_mask_instance = organoid_mask.copy()
+        organoid_mask_instance[organoid_mask_instance != organoid_id] = 0
+        organoid_mask_instance[organoid_mask_instance == organoid_id] = 1
+        # get only nulcei objects that are within the organoid
+        for nuclei_id in nuclei_loader.object_ids:
+            nuclei_mask_instance = nuclei_mask.copy()
+            nuclei_mask_instance[nuclei_mask_instance != nuclei_id] = 0
+            nuclei_mask_instance[nuclei_mask_instance == nuclei_id] = 1
+            # check if any overlap
+            overlap = np.logical_and(organoid_mask_instance, nuclei_mask_instance)
+            if np.sum(overlap) > 0:
+                object_ids_dict[organoid_id].append(nuclei_id)
 
 
 # In[9]:
 
 
-print(organoid_mask.shape)
-import matplotlib.pyplot as plt
-
-plt.subplot(1, 2, 1)
-plt.imshow(organoid_mask[15])
-plt.subplot(1, 2, 2)
-plt.imshow(nuclei_mask[15])
-plt.show()
-
-
-# In[ ]:
-
-
 dfs = []
-for organoid_id in object_ids_dict.keys():
-    print(
-        f"Processing organoid ID: {organoid_id} with {len(object_ids_dict[organoid_id])} nuclei"
+if object_ids_dict == {}:
+    print("No organoids with nuclei found in this image set.")
+    centroid = None
+    df = pd.DataFrame(
+        columns=[
+            "object_id",
+            "shell_assignments",
+            "distances_from_center",
+            "distances_from_exterior",
+            "normalized_distances_from_center",
+        ]
     )
-    coords = get_coordinates(
-        nuclei_mask=nuclei_mask, object_ids=object_ids_dict[organoid_id]
+    df = df.astype(
+        {
+            "object_id": "int",
+            "shell_assignments": "int",
+            "distances_from_center": "float",
+            "distances_from_exterior": "float",
+            "normalized_distances_from_center": "float",
+        }
     )
-    results, centroid = classify_cells_into_shells(
-        coords, n_shells=N_SHELLS, method=METHOD
-    )
+    dfs = [df]
+else:
+    for organoid_id in object_ids_dict.keys():
+        print(
+            f"Processing organoid ID: {organoid_id} with {len(object_ids_dict[organoid_id])} nuclei"
+        )
+        coords = get_coordinates(
+            nuclei_mask=nuclei_mask, object_ids=object_ids_dict[organoid_id]
+        )
+        results, centroid = classify_cells_into_shells(
+            coords, n_shells=N_SHELLS, method=METHOD
+        )
 
-    df = create_results_dataframe(results)
-    dfs.append(df)
+        df = create_results_dataframe(results)
+        dfs.append(df)
 # show the last organoid's visualization as an example
 if in_notebook and centroid is not None:
     fig1 = visualize_organoid_shells(
@@ -209,7 +222,7 @@ if in_notebook and centroid is not None:
     fig2 = plot_distance_distributions(results, N_SHELLS)
 
 
-# In[11]:
+# In[10]:
 
 
 # merge the two dataframes
@@ -221,7 +234,7 @@ for col in merged_df.columns:
 merged_df.head()
 
 
-# In[12]:
+# In[11]:
 
 
 if not merged_df.empty:
@@ -236,7 +249,7 @@ merged_df.to_parquet(output_file)
 merged_df.head()
 
 
-# In[13]:
+# In[12]:
 
 
 end_mem = psutil.Process(os.getpid()).memory_info().rss / 1024**2

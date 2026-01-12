@@ -1,14 +1,9 @@
 patient	well_fov	compartment	channel	feature	processor_type	input_subparent_name	mask_subparent_name	output_features_subparent_name
-NF0018_T6	E8-5	Cell	AGP	Granularity	CPU	zstack_images	segmentation_masks	extracted_features
-NF0018_T6	E8-5	Cell	ER	Granularity	CPU	zstack_images	segmentation_masks	extracted_features
-NF0018_T6	E8-5	Organoid	Mito	Granularity	CPU	zstack_images	segmentation_masks	extracted_features
-NF0018_T6	E8-5	Cell	Mito	Granularity	CPU	zstack_images	segmentation_masks	extracted_features
-NF0018_T6	E8-5	Cell	BF	Granularity	CPU	zstack_images	segmentation_masks	extracted_features
-NF0018_T6	E8-5	Nuclei	DNA	Granularity	CPU	zstack_images	segmentation_masks	extracted_features
-NF0018_T6	E8-5	Nuclei	BF	Granularity	CPU	zstack_images	segmentation_masks	extracted_features
 NF0018_T6	E8-5	Cytoplasm	AGP	Granularity	CPU	zstack_images	segmentation_masks	extracted_features
-NF0018_T6	E8-5	Organoid	BF	Granularity	CPU	zstack_images	segmentation_masks	extracted_features
-NF0018_T6	E8-5	Nuclei	ER	Granularity	CPU	zstack_images	segmentation_masks	extracted_features
+NF0018_T6	E8-5	Nuclei	BF	Granularity	CPU	zstack_images	segmentation_masks	extracted_features
+NF0018_T6	E8-5	Nuclei	DNA	Granularity	CPU	zstack_images	segmentation_masks	extracted_features
+NF0018_T6	E8-5	Organoid	Mito	Granularity	CPU	zstack_images	segmentation_masks	extracted_features
+NF0018_T6	E8-5	Cell	ER	Granularity	CPU	zstack_images	segmentation_masks	extracted_features
 NF0040_T1	G7-3	Nuclei	ER	Granularity	CPU	zstack_images	segmentation_masks	extracted_features
 NF0014_T1	C10-1	Nuclei	DNA	Neighbors	CPU	zstack_images	segmentation_masks	extracted_features
 NF0014_T1	C10-2	Nuclei	DNA	Neighbors	CPU	zstack_images	segmentation_masks	extracted_features
@@ -1299,6 +1294,7 @@ NF0030_T1	G8-4	Nuclei	DNA	Neighbors	CPU	zstack_images	segmentation_masks	extract
 NF0030_T1	G9-1	Nuclei	DNA	Neighbors	CPU	zstack_images	segmentation_masks	extracted_features
 NF0030_T1	G9-2	Nuclei	DNA	Neighbors	CPU	zstack_images	segmentation_masks	extracted_features
 NF0030_T1	G9-3	Nuclei	DNA	Neighbors	CPU	zstack_images	segmentation_masks	extracted_features
+NF0030_T1	G9-4	Nuclei	DNA	Neighbors	CPU	zstack_images	segmentation_masks	extracted_features
 NF0035_T1	C10-1	Nuclei	DNA	Neighbors	CPU	zstack_images	segmentation_masks	extracted_features
 NF0035_T1	C10-2	Nuclei	DNA	Neighbors	CPU	zstack_images	segmentation_masks	extracted_features
 NF0035_T1	C10-3	Nuclei	DNA	Neighbors	CPU	zstack_images	segmentation_masks	extracted_features

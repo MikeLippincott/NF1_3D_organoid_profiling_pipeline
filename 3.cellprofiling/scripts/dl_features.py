@@ -35,7 +35,7 @@ image_base_dir = bandicoot_check(
 logging.basicConfig(level=logging.INFO)
 
 
-# In[ ]:
+# In[3]:
 
 
 if not in_notebook:
@@ -133,7 +133,7 @@ else:
     all_channel_compartment_combinations = [(channel, compartment)]
 
 
-# In[ ]:
+# In[9]:
 
 
 for channel, compartment in all_channel_compartment_combinations:

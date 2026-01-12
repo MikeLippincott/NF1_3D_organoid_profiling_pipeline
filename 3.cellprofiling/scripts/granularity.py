@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
+# In[1]:
 
 
 import os
@@ -21,7 +21,12 @@ from granularity_utils import measure_3D_granularity
 from loading_classes import ImageSetLoader, ObjectLoader
 from resource_profiling_util import get_mem_and_time_profiling
 
-# In[ ]:
+image_base_dir = bandicoot_check(
+    pathlib.Path(os.path.expanduser("~/mnt/bandicoot")).resolve(), root_dir
+)
+
+
+# In[2]:
 
 
 if not in_notebook:
@@ -36,8 +41,8 @@ if not in_notebook:
     output_features_subparent_name = arguments_dict["output_features_subparent_name"]
 
 else:
-    well_fov = "F4-2"
-    patient = "NF0037_T1-Z-0.1"
+    well_fov = "D11-2"
+    patient = "NF0016_T1"
     channel = "Mito"
     compartment = "Nuclei"
     processor_type = "CPU"
@@ -46,18 +51,18 @@ else:
     output_features_subparent_name = "extracted_features"
 
 image_set_path = pathlib.Path(
-    f"{root_dir}/data/{patient}/{input_subparent_name}/{well_fov}/"
+    f"{image_base_dir}/data/{patient}/{input_subparent_name}/{well_fov}/"
 )
 mask_set_path = pathlib.Path(
-    f"{root_dir}/data/{patient}/{mask_subparent_name}/{well_fov}/"
+    f"{image_base_dir}/data/{patient}/{mask_subparent_name}/{well_fov}/"
 )
 output_parent_path = pathlib.Path(
-    f"{root_dir}/data/{patient}/{output_features_subparent_name}/{well_fov}/"
+    f"{image_base_dir}/data/{patient}/{output_features_subparent_name}/{well_fov}/"
 )
 output_parent_path.mkdir(parents=True, exist_ok=True)
 
 
-# In[ ]:
+# In[3]:
 
 
 channel_mapping = {
@@ -73,7 +78,7 @@ channel_mapping = {
 }
 
 
-# In[ ]:
+# In[4]:
 
 
 start_time = time.time()
@@ -81,7 +86,7 @@ start_time = time.time()
 start_mem = psutil.Process(os.getpid()).memory_info().rss / 1024**2
 
 
-# In[ ]:
+# In[5]:
 
 
 image_set_loader = ImageSetLoader(

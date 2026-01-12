@@ -52,7 +52,7 @@ if not in_notebook:
     output_features_subparent_name = arguments_dict["output_features_subparent_name"]
 
 else:
-    well_fov = "D4-1"
+    well_fov = "D11-2"
     patient = "NF0016_T1"
     channel = "ER.Mito"
     compartment = "Nuclei"
@@ -124,7 +124,7 @@ coloc_loader = TwoObjectLoader(
 )
 
 
-# In[7]:
+# In[ ]:
 
 
 output_dir = pathlib.Path(
@@ -142,7 +142,6 @@ for object_id in coloc_loader.object_ids:
             object_id1=object_id,
             object_id2=object_id,
         )
-        print(cropped_image1.shape, cropped_image2.shape)
         colocalization_features = measure_3D_colocalization(
             cropped_image_1=cropped_image1,
             cropped_image_2=cropped_image2,

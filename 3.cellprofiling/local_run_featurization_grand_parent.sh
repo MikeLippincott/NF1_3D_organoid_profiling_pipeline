@@ -54,7 +54,8 @@ while IFS= read -r line; do
         "$mask_subparent_name" \
         "$output_features_subparent_name"
 
-done < "$txt_file"
+# done < "$txt_file"
+done < <(tac "$txt_file")
 
 
 echo "Featurization done"

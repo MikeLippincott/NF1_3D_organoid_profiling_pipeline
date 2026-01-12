@@ -359,7 +359,10 @@ df.head()
 df.groupby(["patient"]).count()
 
 
-# In[14]:
+# In[16]:
 
 
-df.groupby(["patient", "well_fov"]).count()
+df.groupby(["feature"]).count()
+
+
+# In[ ]:

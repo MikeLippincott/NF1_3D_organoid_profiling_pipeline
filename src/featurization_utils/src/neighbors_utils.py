@@ -340,7 +340,15 @@ def classify_cells_into_shells(
     else:
         object_ids = numpy.array(coords["object_id"])
         coords_array = numpy.column_stack([coords["x"], coords["y"], coords["z"]])
-
+    if len(coords_array) == 0:
+        results = {
+            "object_id": [],
+            "shell_assignments": [],
+            "distances_from_center": [],
+            "distances_from_exterior": [],
+            "normalized_distances_from_center": [],
+        }
+        return results, None
     n_cells = len(coords_array)
     centroid = calculate_centroid(coords_array)
 

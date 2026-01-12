@@ -48,8 +48,8 @@ if not in_notebook:
     output_features_subparent_name = arguments_dict["output_features_subparent_name"]
 
 else:
-    well_fov = "C4-2"
-    patient = "NF0014_T1"
+    well_fov = "D4-1"
+    patient = "NF0016_T1"
     channel = "DNA"
     compartment = "Nuclei"
     processor_type = "CPU"
@@ -174,6 +174,20 @@ for organoid_id in organoid_loader.object_ids:
 # In[9]:
 
 
+print(organoid_mask.shape)
+import matplotlib.pyplot as plt
+
+plt.subplot(1, 2, 1)
+plt.imshow(organoid_mask[15])
+plt.subplot(1, 2, 2)
+plt.imshow(nuclei_mask[15])
+plt.show()
+
+
+# In[ ]:
+
+
+dfs = []
 for organoid_id in object_ids_dict.keys():
     print(
         f"Processing organoid ID: {organoid_id} with {len(object_ids_dict[organoid_id])} nuclei"
@@ -184,18 +198,22 @@ for organoid_id in object_ids_dict.keys():
     results, centroid = classify_cells_into_shells(
         coords, n_shells=N_SHELLS, method=METHOD
     )
+
     df = create_results_dataframe(results)
-    if in_notebook:
-        fig1 = visualize_organoid_shells(
-            coords, results, title=f"{METHOD.title()} Method", centroid=centroid
-        )
-        fig2 = plot_distance_distributions(results, N_SHELLS)
+    dfs.append(df)
+# show the last organoid's visualization as an example
+if in_notebook and centroid is not None:
+    fig1 = visualize_organoid_shells(
+        coords, results, title=f"{METHOD.title()} Method", centroid=centroid
+    )
+    fig2 = plot_distance_distributions(results, N_SHELLS)
 
 
-# In[10]:
+# In[11]:
 
 
 # merge the two dataframes
+df = pd.concat(dfs, ignore_index=True)
 merged_df = pd.merge(final_df, df, on="object_id", how="left")
 for col in merged_df.columns:
     if "object_id" not in col and "neighbors" not in col and "image_set" not in col:
@@ -203,7 +221,7 @@ for col in merged_df.columns:
 merged_df.head()
 
 
-# In[11]:
+# In[12]:
 
 
 if not merged_df.empty:
@@ -218,7 +236,7 @@ merged_df.to_parquet(output_file)
 merged_df.head()
 
 
-# In[12]:
+# In[13]:
 
 
 end_mem = psutil.Process(os.getpid()).memory_info().rss / 1024**2

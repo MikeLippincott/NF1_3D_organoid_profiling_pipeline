@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
+# In[1]:
 
 
 import os
@@ -84,7 +84,7 @@ def safe_read_parquet(stats_file):
         return None
 
 
-# In[6]:
+# In[ ]:
 
 
 dataframes = []
@@ -98,7 +98,7 @@ else:
     df = pd.DataFrame()
 
 
-# In[7]:
+# In[ ]:
 
 
 # comment out for now as we only used CPU
@@ -118,7 +118,7 @@ df.head()
 
 # ## Preliminary plots - will finalize in R later
 
-# In[8]:
+# In[ ]:
 
 
 # plot the memory and time for each feature type

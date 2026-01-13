@@ -37,7 +37,7 @@ while IFS= read -r line; do
         --partition=amilan \
         --qos=normal \
         --account=amc-general \
-        --time=5:00 \
+        --time=2:00 \
         --output=child_featurize-%j.out \
         "$git_root"/4.processing_image_based_profiles/merge_features_child.sh "$patient" "$well_fov"
 

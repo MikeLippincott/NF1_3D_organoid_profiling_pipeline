@@ -4,7 +4,7 @@
 #SBATCH --partition=amilan
 #SBATCH --qos=long
 #SBATCH --account=amc-general
-#SBATCH --time=7-00:00:00 # D-HH:MM:SS
+#SBATCH --time=20:00 # D-HH:MM:SS
 #SBATCH --output="logs/grand_parent/grand_parent-%j.out"
 
 module load anaconda

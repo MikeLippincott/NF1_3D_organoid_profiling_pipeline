@@ -39,7 +39,7 @@ if [ "$feature" == "Neighbors" ]; then
     --partition=amilan \
     --qos=normal \
     --account=amc-general \
-    --time=5:00 \
+    --time=90:00 \
     --export=patient="$patient",well_fov="$well_fov",compartment="$compartment",channel="$channel" \
     --output="logs/child/${patient}_${well_fov}/${compartment}_${channel}_neighbors_child-%j.out" \
     "$git_root"/3.cellprofiling/slurm_scripts/run_neighbors_child.sh \

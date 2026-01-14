@@ -23,7 +23,7 @@ profile_base_dir = bandicoot_check(
 )
 
 
-# In[ ]:
+# In[2]:
 
 
 if not in_notebook:
@@ -168,10 +168,17 @@ organoid_merged = organoid_merged.rename(
 )
 
 
-# In[9]:
+# In[13]:
 
 
-sc_merged.head()
+sc_merged["Colocalization_Cytoplasm_DNA.AGP_MEAN.MANDERS.COEFF.M2"]
+
+
+# In[ ]:
+
+
+# show all columns
+s
 
 
 # In[10]:

@@ -39,7 +39,7 @@ if not in_notebook:
 
 else:
     well_fov = "C4-2"
-    patient = "NF0014_T1"
+    patient = "NF0030_T1"
     output_features_subparent_name = "extracted_features"
     image_based_profiles_subparent_name = "image_based_profiles"
 
@@ -164,8 +164,8 @@ for compartment in merged_df_dict.keys():
         for df in merged_df_dict[compartment][feature_type]:
             if df.empty:
                 continue
-            df.drop(columns=["__index_level_0__"], inplace=True, errors="ignore")
-            # if "Texture" not in feature_type:
+            if "__index_level_0__" in df.columns:
+                df.drop(columns=["__index_level_0__"], inplace=True, errors="ignore")
             final_df_dict[compartment][feature_type] = reduce(
                 lambda left, right: pd.merge(
                     left, right, how="left", on=["object_id", "image_set"]
@@ -223,7 +223,7 @@ for compartment in final_df_dict.keys():
                 compartment_merged_dict[compartment],
                 final_df_dict[compartment][feature_type],
                 on=["object_id", "image_set"],
-                how="outer",
+                how="left",
             )
 
 

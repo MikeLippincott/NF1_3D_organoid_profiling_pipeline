@@ -36,9 +36,10 @@ patients
 features_to_check_for = {
     "patient": [],
     "well_fov": [],
-    "file_path": [],
+    "file_name": [],
     "exists": [],
     "file_count": [],
+    "file_path": [],
 }
 for patient in patients:
     extracted_features_dir = pathlib.Path(
@@ -55,6 +56,7 @@ for patient in patients:
         features_to_check_for["patient"].append(patient)
         features_to_check_for["well_fov"].append(well_fov)
         features_to_check_for["file_path"].append(str(converted_profile_dir))
+        features_to_check_for["file_name"].append(converted_profile_dir.name)
         features_to_check_for["exists"].append(converted_profile_dir.exists())
         features_to_check_for["file_count"].append(1)
 
@@ -77,11 +79,11 @@ load_file_path = pathlib.Path("../load_data/load_file.txt").resolve()
 load_file_path.parent.mkdir(parents=True, exist_ok=True)
 with open(load_file_path, "w") as f:
     for idx, row in features_to_check_for_df.iterrows():
-        if row["exists"]:
+        if not row["exists"]:
             f.write(f"{row['patient']}\t{row['well_fov']}\n")
 
 
-# In[9]:
+# In[5]:
 
 
 grouped_df = (
@@ -91,6 +93,3 @@ grouped_df = (
 )
 grouped_df["total_missing"] = grouped_df["file_count"] - grouped_df["exists"]
 grouped_df
-
-
-# In[ ]:

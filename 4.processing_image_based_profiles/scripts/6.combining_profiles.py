@@ -34,8 +34,8 @@ if not in_notebook:
     image_based_profiles_subparent_name = args["image_based_profiles_subparent_name"]
 
 else:
-    patient = "NF0014_T1"
-    image_based_profiles_subparent_name = "convolution_1_image_based_profiles"
+    patient = "NF0030_T1"
+    image_based_profiles_subparent_name = "image_based_profiles"
 
 
 # In[3]:
@@ -55,7 +55,7 @@ organoid_merged_output_path = pathlib.Path(
 organoid_merged_output_path.parent.mkdir(parents=True, exist_ok=True)
 
 
-# In[4]:
+# In[ ]:
 
 
 # get all profiles in the directory recursively
@@ -72,27 +72,6 @@ organoid_profiles = [str(x) for x in profiles if "organoid" in str(x.name)]
 
 
 # In[6]:
-
-
-# for p in sc_profiles:
-#     try:
-#         df = pd.read_parquet(p)['Intensity_Nuclei_DNA_MAX.Z_y']
-#         print(f"Read {p} with shape {df.shape}")
-#     except Exception as e:
-# pass
-
-for col in pd.read_parquet(
-    pathlib.Path(
-        os.path.expanduser(
-            f"~/mnt/bandicoot/NF1_organoid_data/data/NF0014_T1/{image_based_profiles_subparent_name}/0.converted_profiles/C4-2/sc_profiles_C4-2_related.parquet"
-        )
-    )
-).columns:
-    if "intensity" in col.lower():
-        print(col)
-
-
-# In[7]:
 
 
 # concat all sc profiles with duckdb
@@ -119,7 +98,7 @@ if "image_set_2" in organoid_profile.columns:
 # ## Remove all BF channels
 #
 
-# In[8]:
+# In[7]:
 
 
 print(f"Single-cell profiles shape: {sc_profile.shape}")
@@ -133,16 +112,10 @@ organoid_profile = organoid_profile.drop(columns=list_of_columns_to_drop)
 print(f"Organoid profiles shape after dropping BF channels: {organoid_profile.shape}")
 
 
-# In[9]:
+# In[8]:
 
 
 sc_profile.to_parquet(sc_merged_output_path, index=False)
 organoid_profile.to_parquet(organoid_merged_output_path, index=False)
 print(f"Single-cell profiles saved to {sc_merged_output_path}")
 print(f"Organoid profiles saved to {organoid_merged_output_path}")
-
-
-# In[10]:
-
-
-sc_profile

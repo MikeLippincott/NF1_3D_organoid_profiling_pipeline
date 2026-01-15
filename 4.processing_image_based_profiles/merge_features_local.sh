@@ -47,7 +47,7 @@ while IFS= read -r line; do
     well_fov="${parts[1]}"
 
     echo "$patient - $well_fov"
-    log_file="$git_root/4.processing_image_based_profiles/logs/${patient}_${well_fov}.log"
+    log_file="$git_root/4.processing_image_based_profiles/logs/patient_well_fovs/${patient}_${well_fov}.log"
     touch "$log_file"  # create the log file if it doesn't exist
     {
         python "$git_root"/4.processing_image_based_profiles/scripts/1.merge_feature_parquets.py --patient "$patient" --well_fov "$well_fov" --output_features_subparent_name "extracted_features" --image_based_profiles_subparent_name "image_based_profiles"
@@ -57,17 +57,20 @@ while IFS= read -r line; do
 done < "$load_data_file_path"
 
 for patient in "${patient_array[@]}"; do
+    echo "Processing patient: $patient"
 
     patient_log_file="$git_root/4.processing_image_based_profiles/logs/patients/${patient}.log"
     mkdir -p "$(dirname "$patient_log_file")"  # create the patients directory if it doesn't exist
     touch "$patient_log_file"  # create the patient log file if it doesn't exist
     {
-        python "$git_root"/4.processing_image_based_profiles/scripts/6.combining_profiles.py --patient "$patient"
-        python "$git_root"/4.processing_image_based_profiles/scripts/7.annotation.py --patient "$patient"
-        python "$git_root"/4.processing_image_based_profiles/scripts/8.normalization.py --patient "$patient"
-        python "$git_root"/4.processing_image_based_profiles/scripts/9.feature_selection.py --patient "$patient"
-        python "$git_root"/4.processing_image_based_profiles/scripts/10.aggregation.py --patient "$patient"
-        python "$git_root"/4.processing_image_based_profiles/scripts/11.merge_consensus_profiles.py --patient "$patient"
+        python "$git_root"/4.processing_image_based_profiles/scripts/5.combining_profiles.py --patient "$patient" --image_based_profiles_subparent_name "image_based_profiles"
+        python "$git_root"/4.processing_image_based_profiles/scripts/6.annotation.py --patient "$patient" --image_based_profiles_subparent_name "image_based_profiles"
+        python "$git_root"/4.processing_image_based_profiles/scripts/7a.organoid_qc.py --image_based_profiles_subparent_name "image_based_profiles"
+        python "$git_root"/4.processing_image_based_profiles/scripts/7b.single_cell_qc.py --image_based_profiles_subparent_name "image_based_profiles"
+        python "$git_root"/4.processing_image_based_profiles/scripts/8.normalization.py --patient "$patient" --image_based_profiles_subparent_name "image_based_profiles"
+        python "$git_root"/4.processing_image_based_profiles/scripts/9.feature_selection.py --patient "$patient" --image_based_profiles_subparent_name "image_based_profiles"
+        python "$git_root"/4.processing_image_based_profiles/scripts/10.aggregation.py --patient "$patient" --image_based_profiles_subparent_name "image_based_profiles"
+        python "$git_root"/4.processing_image_based_profiles/scripts/11.merge_consensus_profiles.py --patient "$patient" --image_based_profiles_subparent_name "image_based_profiles"
     } >> "$patient_log_file" 2>&1
 
 done
@@ -75,11 +78,9 @@ done
 
 
 conda activate nf1_image_based_profiling_env
-python "$git_root"/4.processing_image_based_profiles/scripts/5a.organoid_qc.py
-python "$git_root"/4.processing_image_based_profiles/scripts/5b.single_cell_qc.py
-python "$git_root"/4.processing_image_based_profiles/scripts/12.combine_patients.py
 
-python "$git_root"/4.processing_image_based_profiles/scripts/0a.get_profiling_stats.py
+python "$git_root"/4.processing_image_based_profiles/scripts/12.combine_patients.py --image_based_profiles_subparent_name "image_based_profiles"
+python "$git_root"/4.processing_image_based_profiles/scripts/0a.get_profiling_stats.py --image_based_profiles_subparent_name "image_based_profiles"
 conda deactivate
 conda activate gff_figure_env
 Rscript "$git_root"/4.processing_image_based_profiles/scripts/0b.plot_profiling_stats.r

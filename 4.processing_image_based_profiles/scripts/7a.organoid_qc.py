@@ -45,20 +45,16 @@ path_to_patients = pathlib.Path(f"{profile_base_dir}/data/")
 # Get all organoid profiles per patient folder and concatenate them
 dfs = []
 for patient_folder in path_to_patients.iterdir():
-    organoid_file = (
+    organoid_file = pathlib.Path(
         patient_folder
         / f"{image_based_profiles_subparent_name}"
-        / "1.combined_profiles"
-        / "organoid.parquet"
+        / "2.annotated_profiles/organoid_anno.parquet"
     )
     if organoid_file.exists():
+        print(f"Processing {organoid_file}")
         df = pd.read_parquet(organoid_file)
         df["patient_id"] = patient_folder.name
-        # Group by image_set and count organoids
-        organoid_counts = (
-            df.groupby("image_set")["object_id"].count().rename("organoid_count")
-        )
-        df = df.merge(organoid_counts, on="image_set", how="left")
+
         dfs.append(df)
 orig_organoid_profiles_df = pd.concat(dfs, ignore_index=True)
 
@@ -78,7 +74,9 @@ orig_organoid_profiles_df.head()
 
 organoid_profiles_df = orig_organoid_profiles_df.copy()
 organoid_profiles_df["cqc.nan_detected"] = (
-    organoid_profiles_df[["object_id", "single_cell_count"]].isna().any(axis=1)
+    organoid_profiles_df[["Metadata_object_id", "Metadata_single_cell_count"]]
+    .isna()
+    .any(axis=1)
 )
 
 # Print the number of organoids flagged
@@ -93,18 +91,24 @@ organoid_profiles_df.head()
 # In[5]:
 
 
+organoid_profiles_df.head(1)
+
+
+# In[6]:
+
+
 # Set the metadata columns to be used in the QC process
 metadata_columns = [
-    "patient_id",
-    "image_set",
-    "object_id",
-    "single_cell_count",
-    "organoid_count",
+    "Metadata_patient_tumor",
+    "Metadata_image_set",
+    "Metadata_object_id",
+    "Metadata_single_cell_count",
+    "Metadata_object_id",
     "cqc.nan_detected",
 ]
 
 
-# In[6]:
+# In[7]:
 
 
 # Process each plate (patient_id) independently in the combined dataframe
@@ -164,7 +168,7 @@ for plate_name, plate_df in organoid_profiles_df.groupby("patient_id"):
     print(f"Saved organoid profiles with outlier flags to {output_file}\n")
 
 
-# In[7]:
+# In[ ]:
 
 
 # Print example output of the flagged organoid profiles

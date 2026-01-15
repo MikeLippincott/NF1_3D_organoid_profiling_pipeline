@@ -34,7 +34,7 @@ if not in_notebook:
     image_based_profiles_subparent_name = args["image_based_profiles_subparent_name"]
 
 else:
-    patient = "NF0030_T1"
+    patient = "NF0014_T1"
     image_based_profiles_subparent_name = "image_based_profiles"
 
 
@@ -55,7 +55,7 @@ organoid_merged_output_path = pathlib.Path(
 organoid_merged_output_path.parent.mkdir(parents=True, exist_ok=True)
 
 
-# In[ ]:
+# In[4]:
 
 
 # get all profiles in the directory recursively

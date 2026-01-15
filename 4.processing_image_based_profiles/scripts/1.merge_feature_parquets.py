@@ -222,10 +222,10 @@ for compartment, df in compartment_merged_dict.items():
     print(compartment, df.shape)
 
 
-# In[11]:
+# In[ ]:
 
 
-with duckdb.connect(DB_structure_path) as cx:
+with duckdb.connect(DB_structure_path, read_only=True) as cx:
     organoid_table = cx.execute("SELECT * FROM Organoid").df()
     cell_table = cx.execute("SELECT * FROM Cell").df()
     nuclei_table = cx.execute("SELECT * FROM Nuclei").df()
@@ -239,11 +239,11 @@ dict_of_DB_structues = {
 }
 
 
-# In[12]:
+# In[ ]:
 
 
 # get the table from the DB_structue
-with duckdb.connect(sqlite_path) as cx:
+with duckdb.connect(sqlite_path, read_only=False) as cx:
     for compartment, df in compartment_merged_dict.items():
         if df.empty:
             cx.register("temp_df", dict_of_DB_structues[compartment])

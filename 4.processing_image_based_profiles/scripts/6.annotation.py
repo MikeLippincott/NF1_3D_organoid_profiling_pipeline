@@ -168,17 +168,12 @@ organoid_merged = organoid_merged.rename(
 )
 
 
-# In[13]:
+# In[9]:
 
 
-sc_merged["Colocalization_Cytoplasm_DNA.AGP_MEAN.MANDERS.COEFF.M2"]
-
-
-# In[ ]:
-
-
-# show all columns
-s
+# save annotated profiles
+sc_merged.to_parquet(sc_annotated_output_path, index=False)
+organoid_merged.to_parquet(organoid_annotated_output_path, index=False)
 
 
 # In[10]:
@@ -190,6 +185,4 @@ organoid_merged.head()
 # In[11]:
 
 
-# save annotated profiles
-sc_merged.to_parquet(sc_annotated_output_path, index=False)
-organoid_merged.to_parquet(organoid_annotated_output_path, index=False)
+sc_merged.head()

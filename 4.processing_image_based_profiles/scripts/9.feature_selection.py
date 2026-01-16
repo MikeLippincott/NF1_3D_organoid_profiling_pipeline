@@ -35,24 +35,24 @@ else:
     image_based_profiles_subparent_name = "image_based_profiles"
 
 
-# In[3]:
+# In[ ]:
 
 
 # pathing
 sc_normalized_path = pathlib.Path(
-    f"{profile_base_dir}/data/{patient}/{image_based_profiles_subparent_name}/3.normalized_profiles/sc_norm.parquet"
+    f"{profile_base_dir}/data/{patient}/{image_based_profiles_subparent_name}/4.normalized_profiles/sc_norm.parquet"
 ).resolve(strict=True)
 organoid_normalized_path = pathlib.Path(
-    f"{profile_base_dir}/data/{patient}/{image_based_profiles_subparent_name}/3.normalized_profiles/organoid_norm.parquet"
+    f"{profile_base_dir}/data/{patient}/{image_based_profiles_subparent_name}/4.normalized_profiles/organoid_norm.parquet"
 ).resolve(strict=True)
 
 
 # output path
 sc_fs_output_path = pathlib.Path(
-    f"{profile_base_dir}/data/{patient}/{image_based_profiles_subparent_name}/4.feature_selected_profiles/sc_fs.parquet"
+    f"{profile_base_dir}/data/{patient}/{image_based_profiles_subparent_name}/5.feature_selected_profiles/sc_fs.parquet"
 ).resolve()
 organoid_fs_output_path = pathlib.Path(
-    f"{profile_base_dir}/data/{patient}/{image_based_profiles_subparent_name}/4.feature_selected_profiles/organoid_fs.parquet"
+    f"{profile_base_dir}/data/{patient}/{image_based_profiles_subparent_name}/5.feature_selected_profiles/organoid_fs.parquet"
 ).resolve()
 
 organoid_fs_output_path.parent.mkdir(parents=True, exist_ok=True)

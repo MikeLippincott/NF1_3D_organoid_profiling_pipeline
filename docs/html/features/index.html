@@ -1,0 +1,210 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Feature Types &mdash; Cell Painting Feature Extraction Pipeline 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Area.Size.Shape Features" href="areasizeshape.html" />
+    <link rel="prev" title="Process" href="../process.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+
+
+          <a href="../index.html" class="icon icon-home">
+            Cell Painting Feature Extraction Pipeline
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../process.html">Process</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Feature Types</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="areasizeshape.html">Area.Size.Shape Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="intensity.html">Intensity Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="colocalization.html">Description</a></li>
+<li class="toctree-l2"><a class="reference internal" href="colocalization.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="colocalization.html#features-extracted">Features Extracted</a></li>
+<li class="toctree-l2"><a class="reference internal" href="colocalization.html#use-cases">Use Cases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="texture.html">Texture Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="granularity.html">Granularity Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="neighbors.html">Neighbors Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sammed3d.html">SAM-Med3D Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#feature-count-summary">Feature Count Summary</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../extraction_math.html">Mathematical Formulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../libraries.html">Libraries</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Cell Painting Feature Extraction Pipeline</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Feature Types</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/features/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <section id="feature-types">
+<h1>Feature Types<a class="headerlink" href="#feature-types" title="Link to this heading"></a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="areasizeshape.html">Area.Size.Shape Features</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="areasizeshape.html#description">Description</a></li>
+<li class="toctree-l2"><a class="reference internal" href="areasizeshape.html#features-extracted">Features Extracted</a></li>
+<li class="toctree-l2"><a class="reference internal" href="areasizeshape.html#calculation-method">Calculation Method</a></li>
+<li class="toctree-l2"><a class="reference internal" href="areasizeshape.html#applications">Applications</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="intensity.html">Intensity Features</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="intensity.html#description">Description</a></li>
+<li class="toctree-l2"><a class="reference internal" href="intensity.html#features-extracted">Features Extracted</a></li>
+<li class="toctree-l2"><a class="reference internal" href="intensity.html#calculation-method">Calculation Method</a></li>
+<li class="toctree-l2"><a class="reference internal" href="intensity.html#data-source">Data Source</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="colocalization.html">Description</a></li>
+<li class="toctree-l1"><a class="reference internal" href="colocalization.html#overview">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="colocalization.html#features-extracted">Features Extracted</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="colocalization.html#correlation-based-metrics">Correlation-Based Metrics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="colocalization.html#manders-coefficients-m1-and-m2">Manders Coefficients (M1 and M2)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="colocalization.html#overlap-coefficient">Overlap Coefficient</a></li>
+<li class="toctree-l2"><a class="reference internal" href="colocalization.html#k1-and-k2-coefficients">K1 and K2 Coefficients</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="colocalization.html#use-cases">Use Cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="texture.html">Texture Features</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="texture.html#description">Description</a></li>
+<li class="toctree-l2"><a class="reference internal" href="texture.html#calculation-method">Calculation Method</a></li>
+<li class="toctree-l2"><a class="reference internal" href="texture.html#features-extracted">Features Extracted</a></li>
+<li class="toctree-l2"><a class="reference internal" href="texture.html#multi-scale-analysis">Multi-Scale Analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="granularity.html">Granularity Features</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="granularity.html#description">Description</a></li>
+<li class="toctree-l2"><a class="reference internal" href="granularity.html#spectrum-approach">Spectrum Approach</a></li>
+<li class="toctree-l2"><a class="reference internal" href="granularity.html#features-extracted">Features Extracted</a></li>
+<li class="toctree-l2"><a class="reference internal" href="granularity.html#interpretation">Interpretation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="granularity.html#applications">Applications</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="neighbors.html">Neighbors Features</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="neighbors.html#description">Description</a></li>
+<li class="toctree-l2"><a class="reference internal" href="neighbors.html#current-implementation">Current Implementation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="neighbors.html#future-extensions">Future Extensions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="neighbors.html#applications">Applications</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="sammed3d.html">SAM-Med3D Features</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="sammed3d.html#description">Description</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sammed3d.html#purpose">Purpose</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sammed3d.html#current-status">Current Status</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sammed3d.html#future-development">Future Development</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<p>The pipeline extracts seven distinct feature types from segmented biological
+compartments. Each feature type captures different aspects of cellular and
+subcellular morphology and intensity.</p>
+</section>
+<section id="feature-count-summary">
+<h2>Feature Count Summary<a class="headerlink" href="#feature-count-summary" title="Link to this heading"></a></h2>
+<p>For a typical imaging experiment with 5 channels and 4 compartment types:</p>
+<ul class="simple">
+<li><p><strong>Area.Size.Shape features per object</strong>: 15</p></li>
+<li><p><strong>Intensity features per object</strong>: 32</p></li>
+<li><p><strong>Colocalization features per object pair</strong>: 32</p></li>
+<li><p><strong>Texture features per object</strong>: 13</p></li>
+<li><p><strong>Granularity features per object</strong>: 1</p></li>
+<li><p><strong>Neighbors features</strong>: 2</p></li>
+<li><p><strong>SAM-Med3D features</strong>: Segmentation masks</p></li>
+</ul>
+<p>Total theoretical features extracted: <strong>2,502</strong></p>
+<p>This is calculated as:</p>
+<div class="math notranslate nohighlight">
+\[n_{features} = n_{objects} \times n_{channels} \times n_{features\_per\_object}
++ n_{objects} \times \frac{n_{channels}(n_{channels} - 1)}{2} \times n_{colocalization}
++ n_{neighbors}\]</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../process.html" class="btn btn-neutral float-left" title="Process" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="areasizeshape.html" class="btn btn-neutral float-right" title="Area.Size.Shape Features" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Way Lab.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>

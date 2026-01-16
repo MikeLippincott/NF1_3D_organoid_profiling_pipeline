@@ -71,16 +71,15 @@ def annotate_profiles(
     profile_df.insert(2, "Well", profile_df.pop("Well"))
     profile_df = pd.merge(
         profile_df,
-        platemap_df[["well_position", "treatment", "dose", "unit"]],
+        platemap_df[["well_position", "treatment", "dose", "dose_unit"]],
         left_on="Well",
         right_on="well_position",
         how="left",
     ).drop(columns=["well_position"])
     profile_df = profile_df.merge(
-        drug_information, how="left", left_on="treatment", right_on="Treatment"
+        drug_information, how="left", left_on="treatment", right_on="treatment"
     )
-    profile_df.drop(columns=["Treatment"], inplace=True)
-    for col in ["treatment", "dose", "unit"]:
+    for col in ["treatment", "dose", "dose_unit"]:
         profile_df.insert(1, col, profile_df.pop(col))
     profile_df.insert(0, "patient", patient)
     return profile_df
@@ -121,6 +120,7 @@ sc_merged = pd.read_parquet(sc_merged_path)
 organoid_merged = pd.read_parquet(organoid_merged_path)
 # read platemap
 platemap = pd.read_csv(platemap_path)
+platemap.rename(columns={"unit": "dose_unit"}, inplace=True)
 platemap.head()
 
 
@@ -136,10 +136,6 @@ organoid_merged = annotate_profiles(organoid_merged, platemap, patient)
 
 sc_merged.rename(columns={"patient": "patient_tumor"}, inplace=True)
 organoid_merged.rename(columns={"patient": "patient_tumor"}, inplace=True)
-sc_merged[["patient", "tumor"]] = sc_merged["patient_tumor"].str.split("_", expand=True)
-organoid_merged[["patient", "tumor"]] = organoid_merged["patient_tumor"].str.split(
-    "_", expand=True
-)
 
 
 # In[8]:
@@ -150,16 +146,16 @@ metadata_features_list = [
     "patient",
     "tumor",
     "object_id",
-    "unit",
     "dose",
+    "dose_unit",
     "Well",
     "treatment",
     "image_set",
     "parent_organoid",
     "single_cell_count",
-    "Target",
-    "Class",
-    "Therapeutic_Categories",
+    "target",
+    "class",
+    "therapeutic_categories",
 ]
 # prepend "Metadata_" to metadata features
 sc_merged = sc_merged.rename(

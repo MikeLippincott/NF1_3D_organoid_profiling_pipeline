@@ -52,7 +52,7 @@ levels_to_merge_dict = {
 
 for patient in patients:
     norm_path = pathlib.Path(
-        f"{profile_base_dir}/data/{patient}/image_based_profiles/3.normalized_profiles"
+        f"{profile_base_dir}/data/{patient}/image_based_profiles/4.normalized_profiles"
     )
     for file in norm_path.glob("*.parquet"):
         if "sc" in file.name:
@@ -71,19 +71,9 @@ feature_select_ops = [
     # "correlation_threshold", # comment out to remove correlation thresholding
 ]
 metadata_cols = [
-    "Metadata_patient_tumor",
-    "Metadata_patient",
-    "Metadata_tumor",
-    "Metadata_object_id",
-    "Metadata_unit",
-    "Metadata_dose",
-    "Metadata_treatment",
-    "Metadata_Target",
-    "Metadata_Class",
-    "Metadata_Therapeutic_Categories",
-    "Metadata_image_set",
-    "Metadata_Well",
-    "Metadata_parent_organoid",
+    x
+    for x in pd.read_parquet(levels_to_merge_dict["sc"][0]).columns
+    if "Metadata_" in x
 ]
 na_cutoff = 0.05
 corr_threshold = 0.9
@@ -115,6 +105,7 @@ for compartment, files in levels_to_merge_dict.items():
         )
         metadata_cols = [
             "Metadata_patient_tumor",
+            "Metadata_patient_id",
             "Metadata_patient",
             "Metadata_tumor",
             "Metadata_object_id",
@@ -172,6 +163,7 @@ for compartment, files in levels_to_merge_dict.items():
             population_df=fs_profiles,
             strata=[
                 "Metadata_patient_tumor",
+                "Metadata_patient_id",
                 "Metadata_patient",
                 "Metadata_tumor",
                 "Metadata_Well",
@@ -194,6 +186,7 @@ for compartment, files in levels_to_merge_dict.items():
             population_df=fs_profiles,
             strata=[
                 "Metadata_patient_tumor",
+                "Metadata_patient_id",
                 "Metadata_patient",
                 "Metadata_tumor",
                 "Metadata_treatment",
@@ -219,6 +212,7 @@ for compartment, files in levels_to_merge_dict.items():
         )
         metadata_cols = [
             "Metadata_patient_tumor",
+            "Metadata_patient_id",
             "Metadata_patient",
             "Metadata_tumor",
             "Metadata_object_id",
@@ -273,6 +267,7 @@ for compartment, files in levels_to_merge_dict.items():
             population_df=fs_profiles,
             strata=[
                 "Metadata_patient_tumor",
+                "Metadata_patient_id",
                 "Metadata_patient",
                 "Metadata_tumor",
                 "Metadata_Well",
@@ -295,6 +290,7 @@ for compartment, files in levels_to_merge_dict.items():
             population_df=fs_profiles,
             strata=[
                 "Metadata_patient_tumor",
+                "Metadata_patient_id",
                 "Metadata_patient",
                 "Metadata_tumor",
                 "Metadata_Well",
@@ -315,3 +311,43 @@ for compartment, files in levels_to_merge_dict.items():
 
         print("The number features before feature selection:", original_data_shape[1])
         print("The number features after feature selection:", fs_profiles.shape[1])
+
+
+# In[6]:
+
+
+import pathlib
+
+import pandas as pd
+
+df = pd.read_parquet(
+    pathlib.Path(
+        "/home/lippincm/mnt/bandicoot/NF1_organoid_data/data/all_patient_profiles/organoid_fs_profiles.parquet"
+    )
+)
+pd.options.display.max_columns = 100
+df.head()
+
+
+# In[16]:
+
+
+df.loc[df["Area.Size.Shape_Organoid_VOLUME"].isna() == True]
+
+
+# In[15]:
+
+
+df.loc[
+    (df["Area.Size.Shape_Organoid_VOLUME"] > 2)
+    & df["Metadata_single_cell_count"].isna()
+]
+
+
+# In[18]:
+
+
+df.loc[df["Metadata_treatment"] == "Cabozantinib 1"]
+
+
+# In[ ]:

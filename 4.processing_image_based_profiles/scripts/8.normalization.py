@@ -43,19 +43,19 @@ else:
 
 # pathing
 sc_annotated_path = pathlib.Path(
-    f"{profile_base_dir}/data/{patient}/{image_based_profiles_subparent_name}/2.annotated_profiles/sc_anno.parquet"
+    f"{profile_base_dir}/data/{patient}/{image_based_profiles_subparent_name}/3.qc_profiles/sc_flagged_outliers.parquet"
 ).resolve(strict=True)
 organoid_annotated_path = pathlib.Path(
-    f"{profile_base_dir}/data/{patient}/{image_based_profiles_subparent_name}/2.annotated_profiles/organoid_anno.parquet"
+    f"{profile_base_dir}/data/{patient}/{image_based_profiles_subparent_name}/3.qc_profiles/organoid_flagged_outliers.parquet"
 ).resolve(strict=True)
 
 
 # output path
 sc_normalized_output_path = pathlib.Path(
-    f"{profile_base_dir}/data/{patient}/{image_based_profiles_subparent_name}/3.normalized_profiles/sc_norm.parquet"
+    f"{profile_base_dir}/data/{patient}/{image_based_profiles_subparent_name}/4.normalized_profiles/sc_norm.parquet"
 ).resolve()
 organoid_normalized_output_path = pathlib.Path(
-    f"{profile_base_dir}/data/{patient}/{image_based_profiles_subparent_name}/3.normalized_profiles/organoid_norm.parquet"
+    f"{profile_base_dir}/data/{patient}/{image_based_profiles_subparent_name}/4.normalized_profiles/organoid_norm.parquet"
 ).resolve()
 
 organoid_normalized_output_path.parent.mkdir(parents=True, exist_ok=True)

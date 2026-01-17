@@ -7,8 +7,8 @@
 # or confirm that activation is handled by a parent script or workflow.
 # find the git repository root directory
 # check if on slurms or local
-# module load anaconda
-# conda init
+module load anaconda
+conda init
 # conda activate GFF_segmentation_nuclei
 
 

@@ -7,9 +7,9 @@
 # or confirm that activation is handled by a parent script or workflow.
 # find the git repository root directory
 # check if on slurms or local
-module load anaconda
-conda init
-conda activate GFF_segmentation_nuclei
+# module load anaconda
+# conda init
+# conda activate GFF_segmentation_nuclei
 
 
 patient=$1
@@ -20,29 +20,35 @@ echo "Processing well_fov $well_fov for patient $patient"
 
 start_time=$(date +%s)
 
-python scripts/0.nuclei_segmentation.py \
-    --patient "$patient" \
-    --well_fov "$well_fov" \
-    --input_subparent_name "$input_subparent_name" \
-    --mask_subparent_name "$mask_subparent_name" \
-    --clip_limit 0.02
+# python scripts/0.nuclei_segmentation.py \
+#     --patient "$patient" \
+#     --well_fov "$well_fov" \
+#     --input_subparent_name "$input_subparent_name" \
+#     --mask_subparent_name "$mask_subparent_name" \
+#     --clip_limit 0.02
 
-conda deactivate
+# conda deactivate
 conda activate GFF_segmentation
 
-python scripts/1.segmentation.py \
-    --patient "$patient" \
-    --well_fov "$well_fov" \
-    --clip_limit 0.02 \
-    --input_subparent_name "$input_subparent_name" \
-    --mask_subparent_name "$mask_subparent_name"
-
-
-python scripts/5.clean_up_segmentation.py \
+python scripts/1a.organoid_segmentation_derived_from_cell.py \
     --patient "$patient" \
     --well_fov "$well_fov" \
     --input_subparent_name "$input_subparent_name" \
     --mask_subparent_name "$mask_subparent_name"
+
+# python scripts/1.segmentation.py \
+#     --patient "$patient" \
+#     --well_fov "$well_fov" \
+#     --clip_limit 0.02 \
+#     --input_subparent_name "$input_subparent_name" \
+#     --mask_subparent_name "$mask_subparent_name"
+
+
+# python scripts/5.clean_up_segmentation.py \
+#     --patient "$patient" \
+#     --well_fov "$well_fov" \
+#     --input_subparent_name "$input_subparent_name" \
+#     --mask_subparent_name "$mask_subparent_name"
 
 end_time=$(date +%s)
 elapsed_time=$((end_time - start_time))

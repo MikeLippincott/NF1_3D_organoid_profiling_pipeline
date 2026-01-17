@@ -3,9 +3,11 @@
 
 # ## Imports
 
-# In[ ]:
+# In[1]:
 
 
+import argparse
+import os
 import pathlib
 import sys
 
@@ -35,12 +37,14 @@ from notebook_init_utils import bandicoot_check, init_notebook
 
 root_dir, in_notebook = init_notebook()
 
-image_base_dir = bandicoot_check(pathlib.Path("~/mnt/bandicoot").resolve(), root_dir)
+image_base_dir = bandicoot_check(
+    pathlib.Path(os.path.expanduser("~/mnt/bandicoot")).resolve(), root_dir
+)
 
 sys.path.append(f"{root_dir}/utils")
 from segmentation_decoupling import euclidian_2D_distance
 
-# In[ ]:
+# In[2]:
 
 
 if not in_notebook:
@@ -55,16 +59,21 @@ else:
     print("Running in a notebook")
     patient = "NF0014_T1"
     well_fov = "C4-2"
+    # patient = "SARCO361_T1"
+    # well_fov = "D8-4"
 
 image_dir = pathlib.Path(
-    f"{image_base_dir}/data/{patient}/profiling_input_images/{well_fov}/"
+    f"{image_base_dir}/data/{patient}/zstack_images/{well_fov}/"
+).resolve(strict=True)
+label_dir = pathlib.Path(
+    f"{image_base_dir}/data/{patient}/segmentation_masks/{well_fov}/"
 ).resolve(strict=True)
 
 
-# In[ ]:
+# In[3]:
 
 
-label_dir = image_dir
+label_dir
 output_path = "output.zarr"
 channel_map = {
     "405": "Nuclei",
@@ -76,7 +85,7 @@ channel_map = {
 scaling_values = [1, 0.1, 0.1]
 
 
-# In[ ]:
+# In[4]:
 
 
 frame_zstacks = image_set_to_arrays(
@@ -139,7 +148,7 @@ with tiff.TiffWriter(output_path, bigtiff=True) as tif:
     tif.write(combined_data, description=ome_xml, photometric="minisblack")
 
 
-# In[ ]:
+# In[5]:
 
 
 # import shutil
@@ -154,7 +163,7 @@ with tiff.TiffWriter(output_path, bigtiff=True) as tif:
 # )
 
 
-# In[ ]:
+# In[6]:
 
 
 viewer = view_ometiff_with_napari(
@@ -164,7 +173,16 @@ viewer = view_ometiff_with_napari(
 )
 
 
-# In[ ]:
+# In[7]:
+
+
+# toggle view for all labels except organoid
+for layer in viewer.layers:
+    if "organoid" not in layer.name.lower():
+        layer.visible = False
+
+
+# In[8]:
 
 
 # screenshot the napari viewer

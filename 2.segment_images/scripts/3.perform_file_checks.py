@@ -4,8 +4,11 @@
 # In[1]:
 
 
+import argparse
 import os
 import pathlib
+import shutil
+import sys
 
 import numpy as np
 import tqdm
@@ -16,7 +19,8 @@ from notebook_init_utils import bandicoot_check, init_notebook
 root_dir, in_notebook = init_notebook()
 
 image_base_dir = bandicoot_check(
-    pathlib.Path(os.path.expanduser("~/mnt/bandicoot")).resolve(), root_dir
+    pathlib.Path(os.path.expanduser("~/mnt/bandicoot/NF1_organoid_data")).resolve(),
+    root_dir,
 )
 
 from file_checking import check_number_of_files
@@ -35,7 +39,7 @@ if not in_notebook:
         mask_subparent_name=mask_subparent_name,
     )
 else:
-    patient = "NF0037_T1-Z-0.1"
+    patient = "NF0014_T1"
     input_subparent_name = "zstack_images"
     mask_subparent_name = "segmentation_masks"
 
@@ -82,10 +86,3 @@ for dir in segmentation_data_dirs:
 print(f"Total directories checked: {total}")
 print(f"Need to rerun: {non_completed}")
 print(f"{completed / total * 100:.2f}% completed successfully")
-
-
-# In[5]:
-
-
-dict_of_reruns["well_fov"].sort()
-dict_of_reruns["well_fov"]

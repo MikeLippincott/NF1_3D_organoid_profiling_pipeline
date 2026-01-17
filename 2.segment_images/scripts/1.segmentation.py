@@ -12,8 +12,10 @@
 # In[1]:
 
 
+import argparse
 import os
 import pathlib
+import sys
 import time
 
 import matplotlib.pyplot as plt
@@ -112,84 +114,87 @@ del cyto2_raw
 
 
 # ## Organoid segmentation
+# Commented out as this segmentation is now derived from cell segmentation.
+# This is done in a separate notebook `1a.organoid_segmentation_derived_from_cell.ipynb`.
+# This code is effectively deprecated.
 
 # In[6]:
 
 
-cyto2_image_shape = cyto2.shape
-# commenting out optimization for time being
-# uncomment to run optimization
-# butterworth_grid_optimization(two_point_five_D_sliding_window, return_plot=False)
+# cyto2_image_shape = cyto2.shape
+# # commenting out optimization for time being
+# # uncomment to run optimization
+# # butterworth_grid_optimization(two_point_five_D_sliding_window, return_plot=False)
 
-filtered_cyto2 = apply_butterworth_filter(
-    sliding_window_two_point_five_D(cyto2, window_size=window_size),  # cyto
-    cutoff_frequency_ratio=0.05,
-    order=1,
-    high_pass=False,
-    squared_butterworth=True,
-)
-model = models.CellposeModel(
-    gpu=[True if torch.cuda.is_available() else False][0],
-    model_type="cyto3",  # CP3
-)
-output_dict = {
-    "slice": [],
-    "labels": [],
-    "details": [],
-}
-for slice in tqdm.tqdm(range(filtered_cyto2.shape[0])):
-    labels, details, _ = segment_with_diameter(
-        filtered_cyto2[slice],
-        model=model,
-        diameter=750,
-        z_axis=0,
-        channels=[1, 0],
-        min_diameter=200,  # default 200
-        diameter_step=200,  # default 200
-    )
-    output_dict["slice"].append(slice)
-    output_dict["labels"].append(labels)
-    output_dict["details"].append(details)
+# filtered_cyto2 = apply_butterworth_filter(
+#     sliding_window_two_point_five_D(cyto2, window_size=window_size),  # cyto
+#     cutoff_frequency_ratio=0.05,
+#     order=1,
+#     high_pass=False,
+#     squared_butterworth=True,
+# )
+# model = models.CellposeModel(
+#     gpu=[True if torch.cuda.is_available() else False][0],
+#     model_type="cyto3",  # CP3
+# )
+# output_dict = {
+#     "slice": [],
+#     "labels": [],
+#     "details": [],
+# }
+# for slice in tqdm.tqdm(range(filtered_cyto2.shape[0])):
+#     labels, details, _ = segment_with_diameter(
+#         filtered_cyto2[slice],
+#         model=model,
+#         diameter=750,
+#         z_axis=0,
+#         channels=[1, 0],
+#         min_diameter=200,  # default 200
+#         diameter_step=200,  # default 200
+#     )
+#     output_dict["slice"].append(slice)
+#     output_dict["labels"].append(labels)
+#     output_dict["details"].append(details)
 
-del filtered_cyto2
+# del filtered_cyto2
 
 
 # In[7]:
 
 
-organoid_masks = np.array(
-    list(
-        decouple_masks(
-            reverse_sliding_window_max_projection(
-                output_dict,
-                window_size=window_size,
-                original_z_slice_count=cyto2_image_shape[0],
-            ),
-            original_img_shape=cyto2_image_shape,
-            distance_threshold=40,
-        ).values()
-    )
-)
+# organoid_masks = np.array(
+#     list(
+#         decouple_masks(
+#             reverse_sliding_window_max_projection(
+#                 output_dict,
+#                 window_size=window_size,
+#                 original_z_slice_count=cyto2_image_shape[0],
+#             ),
+#             original_img_shape=cyto2_image_shape,
+#             distance_threshold=40,
+#         ).values()
+#     )
+# )
 
 
 # In[8]:
 
 
-# generate the coordinates dataframe for reconstruction
-coordinates_df = generate_coordinates_for_reconstruction(organoid_masks)
-# generate distance pairs dataframe
-df = generate_distance_pairs(coordinates_df, x_y_vector_radius_max_constraint=20)
-# create and solve graph to get longest paths
-longest_paths = solve_graph(graph_creation(df))
-# collapse labels based on longest paths and reassign labels in organoid masks
-image = reassign_labels(organoid_masks, collapse_labels(coordinates_df, longest_paths))
-# refine the organoid masks
-organoid_mask = run_post_hoc_refinement(
-    mask_image=image,
-    sliding_window_context=3,
-)
-# clean up and send to gc
-del image, coordinates_df, df, longest_paths
+# # generate the coordinates dataframe for reconstruction
+# coordinates_df = generate_coordinates_for_reconstruction(organoid_masks)
+# # generate distance pairs dataframe
+# df = generate_distance_pairs(coordinates_df, x_y_vector_radius_max_constraint=20)
+# # create and solve graph to get longest paths
+# longest_paths = solve_graph(graph_creation(df))
+# # collapse labels based on longest paths and reassign labels in organoid masks
+# image = reassign_labels(organoid_masks, collapse_labels(coordinates_df, longest_paths))
+# # refine the organoid masks
+# organoid_mask = run_post_hoc_refinement(
+#     mask_image=image,
+#     sliding_window_context=3,
+# )
+# # clean up and send to gc
+# del image, coordinates_df, df, longest_paths
 
 
 # ## Segment the cells
@@ -252,7 +257,7 @@ organoid_mask_output = pathlib.Path(f"{mask_path}/organoid_mask.tiff")
 tifffile.imwrite(nuclei_mask_output, nuclei_mask)
 tifffile.imwrite(cell_mask_output, cell_mask)
 tifffile.imwrite(cytoplasm_mask_output, cytoplasm_mask)
-tifffile.imwrite(organoid_mask_output, organoid_mask)
+# tifffile.imwrite(organoid_mask_output, organoid_mask)
 
 
 # In[14]:

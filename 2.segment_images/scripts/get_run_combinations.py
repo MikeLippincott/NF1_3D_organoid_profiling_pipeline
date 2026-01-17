@@ -7,6 +7,7 @@
 import itertools
 import os
 import pathlib
+import sys
 from itertools import product
 
 import numpy as np
@@ -25,7 +26,9 @@ from notebook_init_utils import bandicoot_check, init_notebook
 
 
 root_dir, in_notebook = init_notebook()
-bandicoot_path = pathlib.Path(os.path.expanduser("~/mnt/bandicoot")).resolve()
+bandicoot_path = pathlib.Path(
+    os.path.expanduser("~/mnt/bandicoot/NF1_organoid_data")
+).resolve()
 image_base_path = bandicoot_check(
     bandicoot_mount_path=bandicoot_path, root_dir=root_dir
 )
@@ -33,7 +36,7 @@ patient_id_file = pathlib.Path(f"{root_dir}/data/patient_IDs.txt").resolve(stric
 patients = pd.read_csv(
     patient_id_file, header=None, names=["patient_id"]
 ).patient_id.tolist()
-
+patients += ["NF0037_T1-Z-1", "NF0037_T1-Z-0.5", "NF0037_T1-Z-0.2", "NF0037_T1-Z-0.1"]
 input_combinations_path = pathlib.Path(
     f"{root_dir}/2.segment_images/load_data/input_combinations.txt"
 )
@@ -81,6 +84,12 @@ convolution_iters = convolution_iters + [50, 75, 100]
 # In[6]:
 
 
+z_stack_testing_patients = [
+    "NF0037_T1-Z-1",
+    "NF0037_T1-Z-0.5",
+    "NF0037_T1-Z-0.2",
+    "NF0037_T1-Z-0.1",
+]
 for patient in patients:
     # get the well_fov for each patient
     patient_well_fovs = pathlib.Path(
@@ -108,6 +117,18 @@ for patient in patients:
             output_dict["well_fov"].append(well_fov)
             output_dict["input_subparent_name"].append("deconvolved_images")
             output_dict["mask_subparent_name"].append("deconvolved_segmentation_masks")
+
+        elif patient in z_stack_testing_patients:
+            # original
+            output_dict["patient"].append(patient)
+            output_dict["well_fov"].append(well_fov)
+            output_dict["input_subparent_name"].append("zstack_images")
+            output_dict["mask_subparent_name"].append("segmentation_masks")
+            # masks from 0.1
+            output_dict["patient"].append(patient)
+            output_dict["well_fov"].append(well_fov)
+            output_dict["input_subparent_name"].append("zstack_images")
+            output_dict["mask_subparent_name"].append("segmentation_masks_from_0_1um")
 
 
 # In[7]:
@@ -156,4 +177,5 @@ df_rerun.head()
 df_rerun = df_rerun.drop(columns=["file_path", "exists"])
 # write to a txt file with each row as a combination
 # each column is a feature of the combination
+print(df_rerun.shape[0])
 df_rerun.to_csv(rerun_combinations_path, sep="\t", index=False)

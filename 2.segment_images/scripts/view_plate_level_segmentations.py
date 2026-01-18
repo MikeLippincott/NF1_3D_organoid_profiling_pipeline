@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[2]:
 
 
 import argparse
@@ -24,7 +24,7 @@ image_base_dir = bandicoot_check(
 )
 
 
-# In[2]:
+# In[3]:
 
 
 if not in_notebook:
@@ -58,7 +58,7 @@ mask_path = pathlib.Path(
 mask_path.mkdir(exist_ok=True, parents=True)
 
 
-# In[3]:
+# In[4]:
 
 
 def plot_plate_overview(
@@ -139,7 +139,119 @@ def plot_plate_overview(
     return fig
 
 
-# In[4]:
+# In[ ]:
+
+
+def plot_plate_overview(
+    plate: str,
+    image_sub_string_to_search: str,
+    available_wells: dict,
+    layout: int = "96",
+    image_color_map: str = "nipy_spectral",
+) -> plt.Figure:
+    """
+    Generate a plate-view of images from each well
+
+    Parameters
+    ----------
+    plate : str
+        plate identifier
+    image_sub_string_to_search : str
+        Substring to search for in image filenames within each well directory
+    available_wells : dict
+        Dictionary mapping well positions to their corresponding directories
+        Dictionary is in the following format:
+            {"well_position": pathlib.Path("path/to/well_directory"), ...}
+    layout : int, optional
+        Plate layout, by default "96"
+    image_color_map : str, optional
+        Colormap for images, by default "nipy_spectral"
+    """
+    if layout == "96":
+        rows = list(string.ascii_uppercase[:8])
+        cols = list(range(1, 13))
+
+    # Create figure with minimal spacing
+    fig, axes = plt.subplots(
+        8,
+        12,
+        figsize=(20, 12),
+        gridspec_kw={
+            "wspace": 0.02,
+            "hspace": 0.02,
+        },  # Minimal spacing between subplots
+    )
+    fig.suptitle(
+        f"{layout}-Well Plate Overview - Plate: {plate}",
+        fontsize=16,
+        fontweight="bold",
+        y=0.98,
+    )
+
+    # Show in a grid one image per plate well
+    for i, row in enumerate(rows):
+        for j, col in enumerate(cols):
+            ax = axes[i, j]
+            well_position = f"{row}{col:02d}"
+            well_position_no_zero = f"{row}{col}"
+
+            # Check if this well has data
+            if (
+                well_position_no_zero in available_wells
+                or well_position in available_wells
+            ):
+                well_dir = available_wells.get(
+                    well_position_no_zero
+                ) or available_wells.get(well_position)
+
+                # Get the first image file from this well
+                image_files = sorted(
+                    list(well_dir.glob(f"*{image_sub_string_to_search}*"))
+                )
+                if image_files:
+                    nuclei_mask = read_zstack_image(image_files[0])
+                    mid_z = nuclei_mask.shape[0] // 2
+                    nuclei_mask = nuclei_mask[mid_z]
+
+                    # Display image
+                    ax.imshow(nuclei_mask, cmap=image_color_map)
+
+                    # Add bezel (border) around the image
+                    for spine in ax.spines.values():
+                        spine.set_edgecolor("black")
+                        spine.set_linewidth(2)
+                        spine.set_visible(True)
+                else:
+                    ax.set_facecolor("lightgray")
+                    for spine in ax.spines.values():
+                        spine.set_edgecolor("gray")
+                        spine.set_linewidth(1)
+                        spine.set_visible(True)
+            else:
+                # Empty well - show gray background with lighter bezel
+                ax.set_facecolor("lightgray")
+                for spine in ax.spines.values():
+                    spine.set_edgecolor("gray")
+                    spine.set_linewidth(1)
+                    spine.set_visible(True)
+
+            # Add labels only on edges
+            if i == 0:  # Top row
+                ax.set_title(f"{col}", fontsize=10, pad=2)
+            if j == 0:  # Left column
+                ax.set_ylabel(f"{row}", fontsize=10, rotation=0, labelpad=10)
+
+            # Remove ticks
+            ax.set_xticks([])
+            ax.set_yticks([])
+
+    # Adjust layout to minimize white space
+    plt.tight_layout(rect=[0, 0, 1, 0.97])
+
+    return fig
+
+
+# In[ ]:
 
 
 well_fovs = mask_path.glob("*")

@@ -260,7 +260,7 @@ tifffile.imwrite(cytoplasm_mask_output, cytoplasm_mask)
 # tifffile.imwrite(organoid_mask_output, organoid_mask)
 
 
-# In[14]:
+# In[ ]:
 
 
 end_mem = psutil.Process(os.getpid()).memory_info().rss / 1024**2

@@ -4,8 +4,13 @@
 # In[1]:
 
 
+import argparse
 import os
 import pathlib
+import pprint
+import sqlite3
+import sys
+from contextlib import closing
 from functools import reduce
 
 import duckdb

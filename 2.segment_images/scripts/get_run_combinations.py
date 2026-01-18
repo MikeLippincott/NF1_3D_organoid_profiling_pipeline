@@ -179,3 +179,11 @@ df_rerun = df_rerun.drop(columns=["file_path", "exists"])
 # each column is a feature of the combination
 print(df_rerun.shape[0])
 df_rerun.to_csv(rerun_combinations_path, sep="\t", index=False)
+
+
+# In[11]:
+
+
+df_rerun.groupby("patient").size().to_frame().reset_index().rename(
+    columns={0: "reruns"}
+)

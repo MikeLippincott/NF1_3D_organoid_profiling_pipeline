@@ -57,7 +57,7 @@ while IFS= read -r line; do
         --partition=amilan \
         --qos=normal \
         --account=amc-general \
-        --time=2:30 \
+        --time=10:00 \
         --output=logs/child/segmentation_child-%j.out \
         "${git_root}"/2.segment_images/child_segmentation.sh "$patient" "$well_fov" "$input_subparent_name" "$mask_subparent_name"
 

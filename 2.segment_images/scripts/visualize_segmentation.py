@@ -44,7 +44,7 @@ image_base_dir = bandicoot_check(
 sys.path.append(f"{root_dir}/utils")
 from segmentation_decoupling import euclidian_2D_distance
 
-# In[2]:
+# In[ ]:
 
 
 if not in_notebook:
@@ -59,8 +59,6 @@ else:
     print("Running in a notebook")
     patient = "NF0014_T1"
     well_fov = "C4-2"
-    # patient = "SARCO361_T1"
-    # well_fov = "D8-4"
 
 image_dir = pathlib.Path(
     f"{image_base_dir}/data/{patient}/zstack_images/{well_fov}/"

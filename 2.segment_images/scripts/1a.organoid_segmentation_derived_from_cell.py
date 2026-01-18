@@ -58,7 +58,7 @@ if not in_notebook:
 else:
     print("Running in a notebook")
     patient = "NF0014_T1"
-    well_fov = "C4-2"
+    well_fov = "G8-2"
     input_subparent_name = "zstack_images"
     mask_subparent_name = "segmentation_masks"
 
@@ -132,4 +132,8 @@ print(f"""
 """)
 
 
-# In[ ]:
+# In[9]:
+
+
+if in_notebook:
+    plt.imshow(organoid_masks[organoid_masks.shape[0] // 2], cmap="nipy_spectral")

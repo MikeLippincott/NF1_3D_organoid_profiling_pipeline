@@ -71,8 +71,8 @@ if not in_notebook:
     )
 else:
     print("Running in a notebook")
-    patient = "NF0018_T6"
-    well_fov = "E11-3"
+    patient = "NF0037_T1-Z-0.5"
+    well_fov = "F4-3"
     clip_limit = 0.01
     input_subparent_name = "zstack_images"
     mask_subparent_name = "segmentation_masks"
@@ -245,6 +245,23 @@ cytoplasm_mask = create_cytoplasm_masks(
 )
 
 
+# ## Organoid segmentation (derived from cell segmentation)
+
+# In[ ]:
+
+
+# convert the cell masks to binary masks
+cell_binary_mask = cell_mask.copy()
+cell_binary_mask[cell_binary_mask > 0] = 1
+# dilate the cell masks slightly
+cell_binary_mask = skimage.morphology.binary_dilation(
+    cell_binary_mask, skimage.morphology.ball(10)
+)
+# convert back to instance mask
+# make sure each instance has a unique integer label
+organoid_mask = skimage.measure.label(cell_binary_mask)
+
+
 # ## Save the segmented masks
 
 # In[13]:
@@ -260,7 +277,7 @@ tifffile.imwrite(cytoplasm_mask_output, cytoplasm_mask)
 # tifffile.imwrite(organoid_mask_output, organoid_mask)
 
 
-# In[ ]:
+# In[14]:
 
 
 end_mem = psutil.Process(os.getpid()).memory_info().rss / 1024**2

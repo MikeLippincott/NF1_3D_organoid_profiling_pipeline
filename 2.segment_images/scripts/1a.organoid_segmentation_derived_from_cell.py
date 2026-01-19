@@ -57,8 +57,8 @@ if not in_notebook:
     )
 else:
     print("Running in a notebook")
-    patient = "NF0014_T1"
-    well_fov = "G8-2"
+    patient = "NF0037_T1-Z-0.5"
+    well_fov = "F4-3"
     input_subparent_name = "zstack_images"
     mask_subparent_name = "segmentation_masks"
 

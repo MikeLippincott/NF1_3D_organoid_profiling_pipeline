@@ -44,7 +44,7 @@ image_base_dir = bandicoot_check(
 sys.path.append(f"{root_dir}/utils")
 from segmentation_decoupling import euclidian_2D_distance
 
-# In[ ]:
+# In[2]:
 
 
 if not in_notebook:

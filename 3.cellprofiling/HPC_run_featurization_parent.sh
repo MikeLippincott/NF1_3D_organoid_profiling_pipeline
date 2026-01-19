@@ -16,7 +16,7 @@ if [ -z "$git_root" ]; then
     exit 1
 fi
 
-time_constant=60:00
+time_constant=30:00
 granularity_time=12:00:00
 ntasks_constant=4
 granularity_ntasks=8

@@ -4,8 +4,11 @@
 # In[1]:
 
 
+import argparse
 import os
 import pathlib
+import shutil
+import sys
 
 import numpy as np
 import pandas as pd
@@ -33,6 +36,7 @@ patients = patients["patientID"].tolist()
 # In[3]:
 
 
+errors_count = 0
 for patient in patients:
     # get the well fovs
     well_fovs = pathlib.Path(f"{image_base_dir}/data/{patient}/zstack_images").glob("*")
@@ -48,3 +52,8 @@ for patient in patients:
         zstack_files = [file.stat().st_size for file in zstack_files]
         if len(set(zstack_files)) != 1:
             print(f"{patient} {well_fov} zstack images has files of different sizes.")
+            errors_count += 1
+print(f"Found {errors_count} errors in total.")
+
+
+# In[ ]:

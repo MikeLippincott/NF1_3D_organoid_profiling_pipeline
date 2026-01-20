@@ -6,6 +6,7 @@
 # In[1]:
 
 
+import argparse
 import os
 import pathlib
 import sys
@@ -15,14 +16,10 @@ import numpy as np
 import pandas as pd
 import skimage.io as io
 import tifffile
-from moviepy.editor import VideoFileClip
 from napari.utils import nbscreenshot
-from napari_animation import Animation
-from napari_animation.easing import Easing
 from nviz.image import image_set_to_arrays
 from nviz.image_meta import extract_z_slice_number_from_filename, generate_ome_xml
 from nviz.view import view_ometiff_with_napari
-from PIL import Image
 
 cwd = pathlib.Path.cwd()
 
@@ -50,48 +47,6 @@ from segmentation_decoupling import euclidian_2D_distance
 # In[2]:
 
 
-def mp4_to_gif(input_mp4, output_gif, fps=10):
-    clip = VideoFileClip(input_mp4)
-    clip = clip.set_fps(fps)  # Reduce FPS to control file size
-    clip.write_gif(output_gif, loop=0)  # loop=0 makes it loop forever
-    print(f"Converted {input_mp4} to {output_gif}")
-
-
-# In[3]:
-
-
-def animate_view(
-    viewer, output_path_name: str, steps: int = 30, easing: str = "linear", dim: int = 3
-):
-    animation = Animation(viewer)
-    if easing == "linear":
-        ease_style = Easing.LINEAR
-    else:
-        raise ValueError(f"Invalid easing style: {easing}")
-
-    viewer.dims.ndisplay = dim
-    # rotate around the y-axis
-    viewer.camera.angles = (0.0, 0.0, 90.0)  # (z, y, x) axis of rotation
-    animation.capture_keyframe(steps=steps, ease=ease_style)
-
-    viewer.camera.angles = (0.0, 180.0, 90.0)
-    animation.capture_keyframe(steps=steps, ease=ease_style)
-
-    viewer.camera.angles = (0.0, 360.0, 90.0)
-    animation.capture_keyframe(steps=steps, ease=ease_style)
-
-    viewer.camera.angles = (0.0, 0.0, 270.0)
-    animation.capture_keyframe(steps=steps, ease=ease_style)
-
-    viewer.camera.angles = (0.0, 0.0, 90.0)
-    animation.capture_keyframe(steps=steps, ease=ease_style)
-
-    animation.animate(output_path_name, canvas_only=True)
-
-
-# In[4]:
-
-
 if not in_notebook:
     args = parse_args()
     well_fov = args["well_fov"]
@@ -102,24 +57,21 @@ if not in_notebook:
     )
 else:
     print("Running in a notebook")
-    patient = "NF0037_T1_CQ1"
-    well_fov = "C2-2"
-
-ANIMATE = True
+    patient = "NF0014_T1"
+    well_fov = "C4-2"
 
 image_dir = pathlib.Path(
     f"{image_base_dir}/data/{patient}/zstack_images/{well_fov}/"
 ).resolve(strict=True)
-amimation_subparent_name = pathlib.Path(
-    f"{root_dir}/2.segment_images/animations/{patient}/{well_fov}/"
-)
-amimation_subparent_name.mkdir(parents=True, exist_ok=True)
+label_dir = pathlib.Path(
+    f"{image_base_dir}/data/{patient}/segmentation_masks/{well_fov}/"
+).resolve(strict=True)
 
 
-# In[5]:
+# In[3]:
 
 
-label_dir = image_dir
+label_dir
 output_path = "output.zarr"
 channel_map = {
     "405": "Nuclei",
@@ -131,7 +83,7 @@ channel_map = {
 scaling_values = [1, 0.1, 0.1]
 
 
-# In[6]:
+# In[4]:
 
 
 frame_zstacks = image_set_to_arrays(
@@ -194,7 +146,7 @@ with tiff.TiffWriter(output_path, bigtiff=True) as tif:
     tif.write(combined_data, description=ome_xml, photometric="minisblack")
 
 
-# In[7]:
+# In[5]:
 
 
 # import shutil
@@ -209,7 +161,7 @@ with tiff.TiffWriter(output_path, bigtiff=True) as tif:
 # )
 
 
-# In[8]:
+# In[6]:
 
 
 viewer = view_ometiff_with_napari(
@@ -219,64 +171,17 @@ viewer = view_ometiff_with_napari(
 )
 
 
-# In[9]:
+# In[7]:
 
 
-if ANIMATE:
-    mp4_file_dir = pathlib.Path(f"{amimation_subparent_name}/mp4/").resolve()
-    gif_file_dir = pathlib.Path(f"{amimation_subparent_name}/gif/").resolve()
-    mp4_file_dir.mkdir(parents=True, exist_ok=True)
-    gif_file_dir.mkdir(parents=True, exist_ok=True)
+# toggle view for all labels except organoid
+for layer in viewer.layers:
+    if "organoid" not in layer.name.lower():
+        layer.visible = False
 
-    # make the viewer full screen
-    viewer.window._qt_window.showMaximized()
-    # hide the layer controls
-    viewer.window._qt_viewer.dockLayerList.setVisible(False)
-    # hide the layer controls
-    viewer.window._qt_viewer.dockLayerControls.setVisible(False)
 
-    # set the viewer to a set window size
-    viewer.window._qt_window.resize(1000, 1000)
-    # get the layer names in the viewer
-    layer_names = [layer.name for layer in viewer.layers]
-    # set all layers to not visible
-    for layer_name in layer_names:
-        print(f"Setting {layer_name} to not visible")
-        viewer.layers[layer_name].visible = False
-    for layer_name in layer_names:
-        viewer.layers[layer_name].visible = True
-        if ".tif" in layer_name:
-            save_name = layer_name.split(".tif")[0]
-        else:
-            save_name = layer_name
+# In[8]:
 
-        # map the layer name to the channel name
-        if "Nuclei" in layer_name:
-            save_name = "DNA"
-        elif "Endoplasmic" in layer_name:
-            save_name = "ER"
-        elif "AGP" in layer_name:
-            save_name = "AGP"
-        elif "Mitochondria" in layer_name:
-            save_name = "mitochondria"
-        elif "Brightfield" in layer_name:
-            save_name = "brightfield"
-        else:
-            save_name = layer_name
 
-        save_path = pathlib.Path(f"{mp4_file_dir}/{well_fov}_{save_name}_animation.mp4")
-        if "640" in layer_name:
-            # increase contrast for the mitochondria
-            viewer.layers[layer_name].contrast_limits = (0, 20000)
-        animate_view(viewer, save_path, steps=30, easing="linear")
-        viewer.layers[layer_name].visible = False
-    print("All layers animated")
-    # get all gifs in the directory
-    mp4_file_path = list(pathlib.Path(mp4_file_dir).rglob("*.mp4"))
-    for mp4_file in mp4_file_path:
-        # change the path to the gif directory
-        mp4_file = pathlib.Path(mp4_file)
-        gif_file = pathlib.Path(gif_file_dir / f"{mp4_file.stem}.gif")
-        mp4_file = str(mp4_file)
-        gif_file = str(gif_file)
-        mp4_to_gif(mp4_file, gif_file)
+# screenshot the napari viewer
+nbscreenshot(viewer)

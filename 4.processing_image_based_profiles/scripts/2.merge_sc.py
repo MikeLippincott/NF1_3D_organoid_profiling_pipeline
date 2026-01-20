@@ -4,8 +4,11 @@
 # In[1]:
 
 
+import argparse
 import os
 import pathlib
+import sys
+import uuid
 
 import duckdb
 import pandas as pd

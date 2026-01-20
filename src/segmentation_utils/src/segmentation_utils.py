@@ -1,4 +1,3 @@
-import pathlib
 from typing import List, Tuple
 
 import matplotlib.pyplot as plt
@@ -6,61 +5,15 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 import skimage
-import torch
 import tqdm
-from cellpose import core, models
-from file_reading import read_zstack_image
 from segmentation_decoupling import (
     euclidian_2D_distance,
     extract_unique_masks,
     get_combinations_of_indices,
-    get_number_of_unique_labels,
     merge_sets_df,
     reassemble_each_mask,
 )
 from skimage.filters import sobel
-
-
-# ----------------------------------------------------------------------
-# extensions and reads
-# ----------------------------------------------------------------------
-def find_files_available(
-    input_dir: pathlib.Path,
-    image_extensions: set = {".tif", ".tiff"},
-) -> List[pathlib.Path]:
-    files = sorted(input_dir.glob("*"))
-    files = [str(x) for x in files if x.suffix in image_extensions]
-    return files
-
-
-def read_in_channels(
-    files,
-    channel_dict: dict = {
-        "nuclei": "405",
-        "cyto1": "488",
-        "cyto2": "555",
-        "cyto3": "640",
-        "brightfield": "TRANS",
-    },
-    channels_to_read: List[str] | None = None,
-):
-    loaded = {}
-    for channel, token in channel_dict.items():
-        matches = [f for f in files if token in pathlib.Path(f).name or token in f]
-        if len(matches) == 0:
-            loaded[channel] = None
-        else:
-            if len(matches) > 1:
-                print(
-                    f"Warning: multiple files match token '{token}' for channel '{channel}'. Using first match: {matches[0]}"
-                )
-            try:
-                loaded[channel] = np.array(read_zstack_image(matches[0]))
-            except Exception as e:
-                print(f"Error loading {matches[0]} for channel '{channel}': {e}")
-                loaded[channel] = None
-
-    return loaded
 
 
 # ----------------------------------------------------------------------

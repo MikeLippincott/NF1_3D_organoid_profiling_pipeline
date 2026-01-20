@@ -1,3 +1,7 @@
+"""
+# Nuclei segmentation using cellpose in a two-D manner
+"""
+
 import cellpose.models as models
 import torch
 import tqdm

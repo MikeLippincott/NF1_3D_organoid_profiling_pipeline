@@ -2,7 +2,7 @@
 # coding: utf-8
 
 # This runs all segmentation operations in one place.
-# The idea is that this should be faster and easier to envoke as we only have to load the image data once instead of N times (~10).
+# The idea is that this should be faster and easier to invoke as we only have to load the image data once instead of N times (~10).
 # Running each individual task as its own script is modular but requires overhead to load the data each time.
 # Currently it takes about 15 minutes to complete a single organoid's segmentation for all compartments... (~50,1500,1500) (Z,Y,X) dimensional image.
 # Let us see how long this takes!

@@ -64,11 +64,6 @@ def reverse_sliding_window_max_projection(
 
 
 # ----------------------------------------------------------------------
-# Organoid segmentation with dynamic diameter search
-# ----------------------------------------------------------------------
-
-
-# ----------------------------------------------------------------------
 # Butterworth filtering function
 # ----------------------------------------------------------------------
 def butterworth_grid_optimization(

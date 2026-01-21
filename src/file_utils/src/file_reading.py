@@ -27,11 +27,11 @@ def read_in_channels(
         "cyto3": "640",
         "brightfield": "TRANS",
     },
-    channels_to_read: List[str] | None = None,
+    channels_to_read: List[str] = [None],
 ):
     loaded = {}
     for channel, token in channel_dict.items():
-        matches = [f for f in files if token in pathlib.Path(f).name or token in f]
+        matches = [f for f in files if token in str(pathlib.Path(f).name)]
         if len(matches) == 0:
             loaded[channel] = None
         else:

@@ -134,7 +134,7 @@ for patient in patients:
         ).glob("*")
         patient_well_fovs = [
             pathlib.Path(f"{bandicoot_mount_path}/data/{patient}/zstack_images/C4-2")
-        ]  # for donvolution testing only
+        ]  # for deconvolution testing only
         for well_fov in patient_well_fovs:
             well_fov = well_fov.name
 

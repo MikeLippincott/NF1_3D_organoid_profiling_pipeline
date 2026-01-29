@@ -1,3 +1,5 @@
+"""
+Run deep learning features on local machine using GPU.
 #!/bin/bash
 
 git_root=$(git rev-parse --show-toplevel)

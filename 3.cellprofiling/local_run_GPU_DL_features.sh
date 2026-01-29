@@ -1,5 +1,3 @@
-"""
-Run deep learning features on local machine using GPU.
 #!/bin/bash
 
 # """Run deep learning features on local machine using GPU."""

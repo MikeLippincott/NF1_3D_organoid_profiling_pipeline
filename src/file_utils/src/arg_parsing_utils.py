@@ -94,12 +94,6 @@ def parse_args():
         default=None,
         help="Name of the subparent directory for segmentation masks, e.g. 'deconvolved_segmentation_masks'",
     )
-    argparser.add_argument(
-        "--output_features_subparent_name",
-        type=str,
-        default=None,
-        help="Name of the subparent directory for output features, e.g. 'sammed3D_features'",
-    )
 
     args = argparser.parse_args()
     well_fov = args.well_fov

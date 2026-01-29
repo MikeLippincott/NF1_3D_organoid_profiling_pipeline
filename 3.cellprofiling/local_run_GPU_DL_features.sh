@@ -40,7 +40,7 @@ done < "$txt_file"
 
 processed_entries=0
 # parse the txt_file where each line contains
-# patient, well_fov, feature, compartment, channel, processor_type
+# patient, well_fov, compartment, channel, feature, processor_type
 while IFS= read -r line; do
 
     # split the line into an array

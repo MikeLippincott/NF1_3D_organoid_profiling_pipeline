@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 """Generate workflow diagram for documentation."""
 
-import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
-import numpy as np
 from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
 
 # Create figure

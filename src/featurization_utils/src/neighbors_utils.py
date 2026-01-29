@@ -369,7 +369,9 @@ def classify_cells_into_shells(
         distances = euclidean_distance_from_centroid(coords_array, centroid)
 
     # Normalize distances to 0-1 range
-    max_distance = numpy.percentile(distances, 95)  # Use 9 percentile to avoid outliers
+    max_distance = numpy.percentile(
+        distances, 95
+    )  # Use 95 percentile to avoid outliers
     # max_distance = numpy.max(distances)
     normalized_distances = distances / max_distance
 

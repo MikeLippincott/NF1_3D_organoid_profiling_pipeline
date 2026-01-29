@@ -2,6 +2,8 @@
 Run deep learning features on local machine using GPU.
 #!/bin/bash
 
+# """Run deep learning features on local machine using GPU."""
+
 git_root=$(git rev-parse --show-toplevel)
 if [ -z "$git_root" ]; then
     echo "Error: Could not find the git root directory."

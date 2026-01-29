@@ -35,7 +35,6 @@ fi
 
 
 # parse the txt_file where each line contains
-# patient, well_fov, feature, compartment, channel, processor_type
 while IFS= read -r line; do
 
     # split the line into an array

@@ -94,24 +94,6 @@ def parse_args():
         default=None,
         help="Name of the subparent directory for segmentation masks, e.g. 'deconvolved_segmentation_masks'",
     )
-    argparser.add_argument(
-        "--output_features_subparent_name",
-        type=str,
-        default=None,
-        help="Name of the subparent directory for output features, e.g. 'sammed3D_features'",
-    )
-    argparser.add_argument(
-        "--converted_profiles_intermediate_subparent_name",
-        type=str,
-        default=None,
-        help="Name of the subparent directory for converted profiles intermediate files, e.g. 'converted_profiles_intermediate'",
-    )
-    argparser.add_argument(
-        "--image_based_profiles_subparent_name",
-        type=str,
-        default=None,
-        help="Name of the subparent directory for image based profiles, e.g. 'image_based_profiles'",
-    )
 
     args = argparser.parse_args()
     well_fov = args.well_fov
@@ -124,7 +106,6 @@ def parse_args():
     input_subparent_name = args.input_subparent_name
     mask_subparent_name = args.mask_subparent_name
     output_features_subparent_name = args.output_features_subparent_name
-    image_based_profiles_subparent_name = args.image_based_profiles_subparent_name
 
     return {
         "well_fov": well_fov,
@@ -137,5 +118,4 @@ def parse_args():
         "input_subparent_name": input_subparent_name,
         "mask_subparent_name": mask_subparent_name,
         "output_features_subparent_name": output_features_subparent_name,
-        "image_based_profiles_subparent_name": image_based_profiles_subparent_name,
     }

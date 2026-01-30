@@ -164,8 +164,6 @@ for compartment in merged_df_dict.keys():
         for df in merged_df_dict[compartment][feature_type]:
             if df.empty:
                 continue
-            if "__index_level_0__" in df.columns:
-                df.drop(columns=["__index_level_0__"], inplace=True, errors="ignore")
             final_df_dict[compartment][feature_type] = reduce(
                 lambda left, right: pd.merge(
                     left, right, how="left", on=["object_id", "image_set"]

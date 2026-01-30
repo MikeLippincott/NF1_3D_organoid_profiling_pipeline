@@ -39,7 +39,7 @@ if not in_notebook:
 
 else:
     well_fov = "C4-2"
-    patient = "NF0014_T1"
+    patient = "NF0030_T1"
     output_features_subparent_name = "extracted_features"
     image_based_profiles_subparent_name = "image_based_profiles"
 
@@ -164,8 +164,6 @@ for compartment in merged_df_dict.keys():
         for df in merged_df_dict[compartment][feature_type]:
             if df.empty:
                 continue
-            df.drop(columns=["__index_level_0__"], inplace=True, errors="ignore")
-            # if "Texture" not in feature_type:
             final_df_dict[compartment][feature_type] = reduce(
                 lambda left, right: pd.merge(
                     left, right, how="left", on=["object_id", "image_set"]
@@ -223,7 +221,7 @@ for compartment in final_df_dict.keys():
                 compartment_merged_dict[compartment],
                 final_df_dict[compartment][feature_type],
                 on=["object_id", "image_set"],
-                how="outer",
+                how="left",
             )
 
 
@@ -237,7 +235,7 @@ for compartment, df in compartment_merged_dict.items():
 # In[25]:
 
 
-with duckdb.connect(DB_structure_path) as cx:
+with duckdb.connect(DB_structure_path, read_only=True) as cx:
     organoid_table = cx.execute("SELECT * FROM Organoid").df()
     cell_table = cx.execute("SELECT * FROM Cell").df()
     nuclei_table = cx.execute("SELECT * FROM Nuclei").df()
@@ -255,7 +253,7 @@ dict_of_DB_structues = {
 
 
 # get the table from the DB_structue
-with duckdb.connect(sqlite_path) as cx:
+with duckdb.connect(sqlite_path, read_only=False) as cx:
     for compartment, df in compartment_merged_dict.items():
         if df.empty:
             cx.register("temp_df", dict_of_DB_structues[compartment])

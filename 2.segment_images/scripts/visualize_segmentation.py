@@ -58,7 +58,7 @@ if not in_notebook:
 else:
     print("Running in a notebook")
     patient = "NF0014_T1"
-    well_fov = "C4-2"
+    well_fov = "C4-1"
 
 image_dir = pathlib.Path(
     f"{image_base_dir}/data/{patient}/zstack_images/{well_fov}/"

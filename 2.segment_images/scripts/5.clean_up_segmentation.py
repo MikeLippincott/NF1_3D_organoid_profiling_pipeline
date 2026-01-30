@@ -23,8 +23,13 @@ image_base_dir = bandicoot_check(
 )
 
 from file_checking import check_number_of_files
+from file_reading import find_files_available, read_in_channels
+from read_in_channel_mapping import retrieve_channel_mapping
 
-# In[2]:
+channel_dict = retrieve_channel_mapping(f"{root_dir}/data/channel_mapping.toml")
+
+
+# In[17]:
 
 
 if not in_notebook:
@@ -41,12 +46,12 @@ if not in_notebook:
     )
 else:
     patient = "NF0014_T1"
-    well_fov = "C4-2"
+    well_fov = "D8-2"
     input_subparent_name = "zstack_images"
     mask_subparent_name = "segmentation_masks"
 
 
-# In[3]:
+# In[18]:
 
 
 # set path to the processed data dir
@@ -58,42 +63,76 @@ zstack_dir = pathlib.Path(
 ).resolve(strict=True)
 
 
-# ## Copy files from processed dir to cellprofiler images dir
-
-# In[4]:
+# In[19]:
 
 
-# regrab the segmentation data files after renaming
-segmentation_data_files = list(segmentation_data_dir.glob("*"))
-print(segmentation_data_files)
+image_dict = read_in_channels(
+    find_files_available(zstack_dir),
+    channel_dict=channel_dict,
+    channels_to_read=["AGP"],
+)
+
+mask_dict = read_in_channels(
+    find_files_available(segmentation_data_dir),
+    channel_dict=channel_dict,
+    channels_to_read=["Cell"],
+)
 
 
-# In[5]:
+cell_mask = mask_dict["Cell"]
+cyto2 = image_dict["AGP"]
 
 
-masks_names_to_keep_dict = {
-    "cell_masks_watershed.tiff": "cell_mask.tiff",
-    "cytoplasm_masks.tiff": "cytoplasm_mask.tiff",
-    "nuclei_masks_reassigned.tiff": "nuclei_mask.tiff",
-    "organoid_masks_reconstructed.tiff": "organoid_mask.tiff",
-}
+# In[20]:
+
+
+# remove all segmentations touching the border within 10 pixels
+
+
+def clean_border_objects(segmentation, border_width=20):
+    cleaned_seg = segmentation.copy()
+    max_z, max_y, max_x = segmentation.shape
+    border_labels = set()
+    # check x borders
+    border_labels.update(np.unique(segmentation[:, :, max_x - border_width :]))
+    border_labels.update(np.unique(segmentation[:, :, :border_width]))
+    # check y borders
+    border_labels.update(np.unique(segmentation[:, :border_width, :]))
+    border_labels.update(np.unique(segmentation[:, -border_width:, :]))
+    # remove these labels
+    for label in border_labels:
+        if label == 0:
+            continue
+        cleaned_seg[segmentation == label] = 0
+    return cleaned_seg
+
+
+cell_mask_cleaned = clean_border_objects(cell_mask, border_width=25)
+# remove small objects
+from skimage import measure, morphology
+
+cell_mask_cleaned = morphology.remove_small_objects(cell_mask_cleaned, min_size=250)
+
+
+# In[21]:
+
+
+import matplotlib.pyplot as plt
+
+plt.figure(figsize=(12, 6))
+plt.subplot(1, 3, 1)
+plt.title("Raw cell mask")
+plt.imshow(cell_mask[cell_mask.shape[0] // 2])
+plt.axis("off")
+plt.subplot(1, 3, 2)
+plt.title("Cleaned cell mask")
+plt.axis("off")
+plt.imshow(cell_mask_cleaned[cell_mask_cleaned.shape[0] // 2])
+plt.subplot(1, 3, 3)
+plt.title("Cytoplasm channel")
+plt.axis("off")
+plt.imshow(cyto2[cyto2.shape[0] // 2])
+plt.show()
 
 
 # In[ ]:
-
-
-for file in tqdm.tqdm(segmentation_data_files, desc="Cleaning up segmentation masks"):
-    # print(file.name)
-    if file.name in masks_names_to_keep_dict.keys():
-        # rename file to standard name
-        new_name = masks_names_to_keep_dict[file.name]
-        new_path = segmentation_data_dir / new_name
-        file.rename(new_path)
-# reglob the files
-segmentation_data_files = list(segmentation_data_dir.glob("*"))
-for file in segmentation_data_files:
-    if file.name in masks_names_to_keep_dict.values():
-        continue
-    else:
-        # delete file
-        file.unlink()

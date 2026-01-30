@@ -5,9 +5,6 @@
 # The idea is that this should be faster and easier to invoke as we only have to load the image data once instead of N times (~10).
 # Running each individual task as its own script is modular but requires overhead to load the data each time.
 # Currently it takes about 15 minutes to complete a single organoid's segmentation for all compartments... (~50,1500,1500) (Z,Y,X) dimensional image.
-# Let us see how long this takes!
-#
-# No we are at ~8 minutes!
 
 # In[1]:
 
@@ -22,17 +19,19 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import psutil
+import skimage
 import tifffile
 import torch
 from arg_parsing_utils import check_for_missing_args, parse_args
 from cellpose import models
-from file_reading import read_zstack_image
+from file_reading import find_files_available, read_in_channels, read_zstack_image
+from general_segmentation_utils import *
 from notebook_init_utils import bandicoot_check, init_notebook
 from nuclei_segmentation import *
+from read_in_channel_mapping import *
 from segmentation_decoupling import *
 from skimage.filters import sobel
-
-from segmentation_utils import *
+from skimage.segmentation import relabel_sequential
 
 # In[2]:
 
@@ -71,8 +70,8 @@ if not in_notebook:
     )
 else:
     print("Running in a notebook")
-    patient = "NF0037_T1-Z-0.5"
-    well_fov = "F4-3"
+    patient = "NF0014_T1"
+    well_fov = "E10-1"
     window_size = 3
     clip_limit = 0.01
     input_subparent_name = "zstack_images"
@@ -86,6 +85,7 @@ mask_path = pathlib.Path(
     f"{image_base_dir}/data/{patient}/{mask_subparent_name}/{well_fov}"
 ).resolve()
 mask_path.mkdir(exist_ok=True, parents=True)
+channel_dict = retrieve_channel_mapping(f"{root_dir}/data/channel_mapping.toml")
 
 
 # In[5]:
@@ -93,18 +93,12 @@ mask_path.mkdir(exist_ok=True, parents=True)
 
 return_dict = read_in_channels(
     find_files_available(input_dir),
-    channel_dict={
-        "nuclei": "405",  # key - string search in filename
-        "cyto1": "488",
-        "cyto2": "555",
-        "cyto3": "640",
-        "brightfield": "TRANS",
-    },
-    channels_to_read=["nuclei"],
+    channel_dict=channel_dict,
+    channels_to_read=["DNA"],
 )
 
 
-nuclei_raw = return_dict["nuclei"]
+nuclei_raw = return_dict["DNA"]
 # run clip_limit here
 nuclei = skimage.exposure.equalize_adapthist(
     nuclei_raw, clip_limit=clip_limit, kernel_size=None
@@ -118,9 +112,8 @@ del nuclei_raw
 
 
 nuclei_image_shape = nuclei.shape
-#
-nuclei_masks = np.array(
-    list(  # send to array
+nuclei_masks = np.array(  # convert to array
+    list(  # send to list
         decouple_masks(  # 4. decouple masks
             reverse_sliding_window_max_projection(  # 3. reverse sliding window
                 segmentaion_on_two_D(  # 2. segment on 2D
@@ -138,7 +131,18 @@ nuclei_masks = np.array(
 )
 
 
-# In[7]:
+# ## remove small masks in each slice
+
+# In[18]:
+
+
+for z in range(nuclei_masks.shape[0]):
+    nuclei_masks[z] = skimage.morphology.remove_small_objects(
+        nuclei_masks[z], min_size=500, connectivity=1
+    )
+
+
+# In[20]:
 
 
 # generate the coordinates dataframe for reconstruction
@@ -158,27 +162,24 @@ nuclei_mask = run_post_hoc_refinement(
 del image, coordinates_df, df, longest_paths
 
 
-# ## run the mask reassignment function (post-hoc)
-# ### This needs to occur after both nuclei and cell segmentations are done
+# ## relabel the nuclei
 
-# In[8]:
+# In[21]:
 
 
-nuclei_df = get_labels_for_post_hoc_reassignment(
-    compartment_mask=nuclei_mask, compartment_name="nuclei"
-)
+nuclei_mask, _, _ = relabel_sequential(nuclei_mask)
 
 
 # ## Save the segmented masks
 
-# In[9]:
+# In[10]:
 
 
 nuclei_mask_output = pathlib.Path(f"{mask_path}/nuclei_mask.tiff")
 tifffile.imwrite(nuclei_mask_output, nuclei_mask)
 
 
-# In[10]:
+# In[11]:
 
 
 end_mem = psutil.Process(os.getpid()).memory_info().rss / 1024**2

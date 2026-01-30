@@ -60,9 +60,9 @@ class SAMMed3DFeatureExtractor:
 
         # Load model
         model, self.encoder = self._load_model(model_path, use_medim)
-        del model # delete model, as we only need the encoder branch
-        self.encoder .to(device)
-        self.encoder .eval()
+        del model  # delete model, as we only need the encoder branch
+        self.encoder.to(device)
+        self.encoder.eval()
 
         # Get feature dimensions
         self.feature_dim = self._get_feature_dim()
@@ -122,9 +122,6 @@ class SAMMed3DFeatureExtractor:
                 if sammed3d_path:
                     sys.path.insert(0, sammed3d_path)
                     print(f"✓ Found SAM-Med3D at {sammed3d_path}")
-
-                from segment_anything.modeling import Sam
-                from segment_anything.modeling.image_encoder import ImageEncoderViT3D
 
                 print("✓ Loading SAM-Med3D manually from repo")
 
@@ -483,5 +480,66 @@ def call_SAMMed3D_pipeline(
                 output_dict["compartment"].append(object_loader.compartment)
                 output_dict["value"].append(feature_value)
                 output_dict["feature_type"].append(feature_type)
+
+    return output_dict
+
+
+def call_whole_image_sammed3d_pipeline(
+    image: np.ndarray,
+    SAMMed3D_model_path: Optional[str] = None,
+    feature_type: str | List = ["global", "patch", "cls"],
+) -> dict:
+    """
+    This function is to be called per patient, well-fov
+    Here we call the SAMMed3D pipeline to extract features for the whole image
+    Parameters
+    ----------
+    image : np.ndarray
+        3D numpy array of the image
+    SAMMed3D_model_path : Optional[str], optional
+        Path to the SAMMed3D model, by default None
+    feature_type : str | List, optional
+        Type of features to extract, by default ["global", "patch", "cls"]
+    Returns
+    -------
+    dict
+        Dictionary of extracted features from SAMMed3D for the whole image
+        Keys:
+            - "feature_name": List of feature names
+            - "value": List of feature values
+    """
+    assert isinstance(feature_type, (str, list)), (
+        "feature_type must be a string or list of strings"
+    )
+
+    output_dict = {
+        "feature_name": [],
+        "value": [],
+        "feature_type": [],
+    }
+
+    extracter = MicroscopySAMMed3DPipeline(
+        sammed3d_path=SAMMed3D_model_path,
+        device="cuda" if torch.cuda.is_available() else "cpu",
+    )
+
+    if isinstance(feature_type, list):
+        for ft in feature_type:
+            features = extracter.extract_features(
+                image, feature_type=ft
+            )  # preprocess the volume
+            for i, feature_value in enumerate(features.flatten()):
+                output_dict["feature_name"].append(f"SAMMed3D_{ft}_feature_{i}")
+                output_dict["value"].append(feature_value)
+                output_dict["feature_type"].append(ft)
+        return output_dict
+    else:
+        features = extracter.extract_features(
+            image, feature_type=feature_type
+        )  # preprocess the volume
+        for i, feature_value in enumerate(features.flatten()):
+            output_dict["feature_name"].append(f"SAMMed3D_feature_{i}")
+            output_dict["value"].append(feature_value)
+            output_dict["feature_type"].append(feature_type)
 
     return output_dict

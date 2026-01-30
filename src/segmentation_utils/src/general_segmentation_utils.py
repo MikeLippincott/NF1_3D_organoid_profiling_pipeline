@@ -180,9 +180,9 @@ def generate_coordinates_for_reconstruction(image: np.ndarray) -> pd.DataFrame:
         "bbox-3": [],
     }
 
-    for slice in range(image.shape[0]):
+    for image_slice in range(image.shape[0]):
         props = skimage.measure.regionprops_table(
-            image[slice, :, :], properties=["label", "centroid", "bbox"]
+            image[image_slice, :, :], properties=["label", "centroid", "bbox"]
         )
 
         label, centroid1, centroid2, bbox0, bbox1, bbox2, bbox3 = (
@@ -197,7 +197,7 @@ def generate_coordinates_for_reconstruction(image: np.ndarray) -> pd.DataFrame:
         if len(label) > 0:
             for i in range(len(label)):
                 cordinates["original_label"].append(label[i])
-                cordinates["slice"].append(slice)
+                cordinates["slice"].append(image_slice)
                 cordinates["centroid-0"].append(centroid1[i])
                 cordinates["centroid-1"].append(centroid2[i])
                 cordinates["bbox-0"].append(bbox0[i])
@@ -421,9 +421,9 @@ def reassign_labels(
 ):
     new_mask_image = np.zeros_like(image)
     # mask label reassignment
-    for slice in range(image.shape[0]):
-        mask = image[slice, :, :]
-        tmp_df = df[df["slice"] == slice]
+    for image_slice in range(image.shape[0]):
+        mask = image[image_slice, :, :]
+        tmp_df = df[df["slice"] == image_slice]
         if tmp_df.empty:
             continue
         # check if label is present or if reassignment is needed
@@ -432,7 +432,7 @@ def reassign_labels(
         for i in range(tmp_df.shape[0]):
             mask[mask == tmp_df.iloc[i]["original_label"]] = tmp_df.iloc[i]["label"]
 
-        new_mask_image[slice, :, :] = mask
+        new_mask_image[image_slice, :, :] = mask
     return new_mask_image
 
 
@@ -627,10 +627,10 @@ def add_masks_where_missing(
     np.ndarray
         The new mask image with the added slices.
     """
-    for slice in interpolated_rows_to_add_df["added_z"].unique():
+    for image_slice in interpolated_rows_to_add_df["added_z"].unique():
         # get the rows that correspond to the slice
         tmp_df = interpolated_rows_to_add_df[
-            interpolated_rows_to_add_df["added_z"] == slice
+            interpolated_rows_to_add_df["added_z"] == image_slice
         ]
         if tmp_df.shape[0] == 0:
             continue

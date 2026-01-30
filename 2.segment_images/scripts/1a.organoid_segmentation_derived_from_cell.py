@@ -16,10 +16,11 @@ import psutil
 import skimage
 import tifffile
 from arg_parsing_utils import check_for_missing_args, parse_args
+from file_reading import *
 from file_reading import read_zstack_image
+from general_segmentation_utils import *
 from notebook_init_utils import bandicoot_check, init_notebook
-
-from segmentation_utils import *
+from skimage import exposure
 
 # In[2]:
 
@@ -57,8 +58,8 @@ if not in_notebook:
     )
 else:
     print("Running in a notebook")
-    patient = "NF0037_T1-Z-0.5"
-    well_fov = "F4-3"
+    patient = "NF0014_T1"
+    well_fov = "D10-1"
     input_subparent_name = "zstack_images"
     mask_subparent_name = "segmentation_masks"
 
@@ -86,10 +87,9 @@ if in_notebook:
             "cyto3": "640",
             "brightfield": "TRANS",
         },
-        channels_to_read=["cyto1"],
+        channels_to_read=["cyto2"],
     )
-    cyto1_raw = return_dict["cyto1"]
-    del cyto1_raw
+    cyto2_raw = return_dict["cyto2"]
 cell_mask_path = pathlib.Path(f"{mask_path}/cell_mask.tiff")
 cell_mask = read_zstack_image(cell_mask_path)
 
@@ -102,7 +102,15 @@ cell_binary_mask = cell_mask.copy()
 cell_binary_mask[cell_binary_mask > 0] = 1
 # dilate the cell masks slightly
 cell_binary_mask = skimage.morphology.binary_dilation(
-    cell_binary_mask, skimage.morphology.ball(10)
+    cell_binary_mask, skimage.morphology.ball(2)
+)
+# fill holes
+cell_binary_mask = skimage.morphology.binary_closing(
+    cell_binary_mask, skimage.morphology.ball(2)
+)
+# remove small objects
+cell_binary_mask = skimage.morphology.remove_small_objects(
+    cell_binary_mask.astype(bool), min_size=300
 )
 # convert back to instance mask
 # make sure each instance has a unique integer label
@@ -136,4 +144,18 @@ print(f"""
 
 
 if in_notebook:
-    plt.imshow(organoid_masks[organoid_masks.shape[0] // 2], cmap="nipy_spectral")
+    cyto2_raw = exposure.equalize_adapthist(cyto2_raw, clip_limit=0.02)
+    plt.figure(figsize=(10, 10))
+    plt.subplot(131)
+    plt.imshow(cyto2_raw[cyto2_raw.shape[0] // 2], cmap="gray")
+    plt.axis("off")
+    plt.title("Cytoplasm channel (raw)")
+    plt.subplot(132)
+    plt.imshow(cell_mask[cell_mask.shape[0] // 2], cmap="nipy_spectral")
+    plt.axis("off")
+    plt.title("Cell mask")
+    plt.subplot(133)
+    plt.imshow(organoid_masks[organoid_masks.shape[0] // 2], cmap="tab20")
+    plt.axis("off")
+    plt.title("Organoid segmentation mask")
+    plt.show()

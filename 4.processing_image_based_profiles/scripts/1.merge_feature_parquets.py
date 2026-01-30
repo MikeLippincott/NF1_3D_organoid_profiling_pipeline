@@ -4,8 +4,13 @@
 # In[1]:
 
 
+import argparse
 import os
 import pathlib
+import pprint
+import sqlite3
+import sys
+from contextlib import closing
 from functools import reduce
 
 import duckdb
@@ -58,7 +63,7 @@ parquet_files.sort()
 print(len(parquet_files), "parquet files found")
 
 
-# In[3]:
+# In[15]:
 
 
 # create the nested dictionary to hold the feature types and compartments
@@ -86,7 +91,7 @@ for file in parquet_files:
                 feature_types_dict[compartment][feature_type].append(file)
 
 
-# In[4]:
+# In[17]:
 
 
 for compartment in feature_types_dict.keys():
@@ -143,7 +148,7 @@ for compartment in feature_types_dict.keys():
                         continue
 
 
-# In[5]:
+# In[18]:
 
 
 final_df_dict = {
@@ -151,7 +156,7 @@ final_df_dict = {
 }
 
 
-# In[ ]:
+# In[19]:
 
 
 for compartment in merged_df_dict.keys():
@@ -167,7 +172,7 @@ for compartment in merged_df_dict.keys():
             )
 
 
-# In[7]:
+# In[20]:
 
 
 merged_df = pd.DataFrame(
@@ -178,7 +183,7 @@ merged_df = pd.DataFrame(
 )
 
 
-# In[8]:
+# In[21]:
 
 
 compartment_merged_dict = {
@@ -189,12 +194,19 @@ compartment_merged_dict = {
 }
 
 
-# In[9]:
+# In[22]:
+
+
+final_df_dict["Nuclei"]["Neighbor"]
+
+
+# In[23]:
 
 
 for compartment in final_df_dict.keys():
     print(f"Processing compartment: {compartment}")
     for feature_type in final_df_dict[compartment].keys():
+        print(feature_type, compartment)
         if compartment != "Nuclei" and feature_type == "Neighbor":
             print(
                 f"Skipping {compartment} {feature_type} as it is not applicable for this compartment."
@@ -213,14 +225,14 @@ for compartment in final_df_dict.keys():
             )
 
 
-# In[10]:
+# In[24]:
 
 
 for compartment, df in compartment_merged_dict.items():
     print(compartment, df.shape)
 
 
-# In[ ]:
+# In[25]:
 
 
 with duckdb.connect(DB_structure_path, read_only=True) as cx:
@@ -237,7 +249,7 @@ dict_of_DB_structues = {
 }
 
 
-# In[ ]:
+# In[26]:
 
 
 # get the table from the DB_structue

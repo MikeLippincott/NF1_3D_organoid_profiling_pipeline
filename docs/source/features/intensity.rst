@@ -108,6 +108,7 @@ Applications
 ===================================================
 
 Intensity features are useful for:
+
 * Quantifying fluorescence levels within cellular structures
 * Detecting changes in protein expression
 * Characterizing subcellular localization patterns

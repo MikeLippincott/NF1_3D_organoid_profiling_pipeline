@@ -80,9 +80,8 @@ create_box(
 )
 create_arrow(ax, 5, 19.4, 5, 18.6)
 
-create_box(ax, 2, 17.8, 2.5, 0.6, "Z-stack Creation", color_process, fontsize=8)
-create_box(ax, 5, 17.8, 2.5, 0.6, "File Structure", color_process, fontsize=8)
-create_box(ax, 8, 17.8, 2.5, 0.6, "Deconvolution", color_process, fontsize=8)
+create_box(ax, 3.7, 17.8, 2.5, 0.6, "Z-stack Creation", color_process, fontsize=8)
+create_box(ax, 6.5, 17.8, 2.5, 0.6, "Deconvolution", color_process, fontsize=8)
 
 ax.text(5, 17, "↓", fontsize=20, ha="center")
 create_box(ax, 5, 16.3, 3, 0.8, "Deconvolved Z-Stack Images", color_output)
@@ -159,7 +158,7 @@ fig.text(0.12, 0.02, "© NF1 Organoid Profiling Pipeline", fontsize=8, style="it
 plt.tight_layout()
 plt.savefig(
     "/home/lippincm/Documents/NF1_3D_organoid_profiling_pipeline/docs/source/_static/workflow_diagram.png",
-    dpi=300,
+    dpi=600,
     bbox_inches="tight",
     facecolor="white",
 )

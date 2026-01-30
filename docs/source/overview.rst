@@ -36,19 +36,19 @@ Stage 0: Data Preprocessing
 Process Steps
 ^^^^^^^^^^^^^^
 
-1. **Patient-Specific Preprocessing** (``0.patient_specific_preprocessing.py``)
+1. **Patient-Specific Preprocessing**
 
    - Organize raw image files by patient ID
    - Validate file naming conventions
    - Create patient-specific directory structures
 
-2. **File Structure Updates** (``1.update_file_structure.py``)
+2. **File Structure Updates**
 
    - Standardize directory hierarchy across patients
    - Rename files to consistent naming scheme
    - Verify data integrity
 
-3. **Z-Stack Creation** (``2a.make_z-stack_images.py``, ``1z.make_zstack_and_copy_over_CQ1.py``)
+3. **Z-Stack Creation**
 
    - Combine 2D image slices into 3D z-stacks
    - Handle different microscope formats (CQ1, IX83)
@@ -56,19 +56,19 @@ Process Steps
    - Typical z-spacing: 0.5 µm
    - Stack depth: 50-100 slices (~25-50 µm)
 
-4. **Corruption Detection** (``2b.check_for_corrupted_images.py``)
+4. **Corruption Detection**
 
    - Validate TIFF file integrity
    - Check for incomplete or damaged files
    - Flag problematic datasets
 
-5. **Deconvolution Preprocessing** (``3.decon_preprocessing.py``)
+5. **Deconvolution Preprocessing**
 
    - Prepare images for Huygens deconvolution
    - Generate parameter files
    - Organize batch processing structure
 
-6. **Post-Deconvolution Processing** (``4.post_decon_preprocessing.py``)
+6. **Post-Deconvolution Processing**
 
    - Import deconvolved images
    - Verify output quality
@@ -110,25 +110,25 @@ Stage 1: Image Quality Control
 Process Steps
 ^^^^^^^^^^^^^^
 
-1. **CellProfiler QC Pipeline** (``0.run_qc_pipeline.ipynb``)
+1. **CellProfiler QC Pipeline**
 
    - Extract whole-image metrics using CellProfiler
    - Compute per-slice statistics
    - Export metrics to CSV
 
-2. **Blur Evaluation** (``1.evaluate_blur.ipynb``)
+2. **Blur Evaluation**
 
    - Calculate Laplacian variance for focus detection
    - Identify out-of-focus z-slices
    - Set thresholds for acceptable sharpness
 
-3. **Saturation Analysis** (``2.evaluate_saturation.ipynb``)
+3. **Saturation Analysis**
 
    - Detect overexposed pixels per channel
    - Calculate percentage of saturated voxels
    - Flag wells with excessive saturation (>5%)
 
-4. **QC Report Generation** (``3.generate_qc_report.ipynb``)
+4. **QC Report Generation**
 
    - Create visualizations with ggplot2 (R)
    - Generate per-plate and per-patient summaries
@@ -142,6 +142,7 @@ Process Steps
 - **Illumination:** Uniformity across FOV
 
 **Inputs:**
+
 - Deconvolved z-stack images from Stage 0
 
 **Outputs:**
@@ -167,12 +168,12 @@ Stage 2: Image Segmentation
 Process Steps
 ^^^^^^^^^^^^^^
 
-1. **Nuclei Segmentation** (``0.nuclei_segmentation.py``)
+1. **Nuclei Segmentation**
 
    - Use Cellpose 4.0
    - Process DNA channel (405 nm)
 
-2. **Organoid Segmentation** (``1.segmentation.py``)
+2. **Organoid Segmentation**
 
    - Use cellpose 3.x using a custom size invariant search algorithm
 
@@ -187,11 +188,11 @@ Process Steps
    - Subtract nuclear masks from cell masks
    - Generate cytoplasmic compartment masks
 
-5. **Mask Refinement** (``2.postprocess_segmentation.ipynb``)
+5. **Mask Refinement**
 
-    - stitch 2D masks into 3D volumes
-    - match objects to retain the same IDs across z-slices
-    - pair nuclei to cells and organoids
+   - stitch 2D masks into 3D volumes
+   - match objects to retain the same IDs across z-slices
+   - pair nuclei to cells and organoids
 
 **Execution:**
 
@@ -239,69 +240,72 @@ Stage 4: Profile Processing
 
 **Purpose:** Merge, normalize, and aggregate features across wells and patients.
 
-Process Steps
+Process Steps:
 ^^^^^^^^^^^^^^
 
-1. **Feature Merging** (``scripts/2.merge_sc.py``, ``scripts/6.combining_profiles.py``)
+1. **Feature Merging**
 
    - Combine all feature CSVs per well FOV
    - Use cytotable for SQLite → Parquet conversion
    - Create single-cell (sc) and organoid-level profiles
 
-2. **Annotation** (``scripts/7.annotation.py``)
+2. **Annotation**
 
    - Add treatment metadata from plate maps
    - Link drug names, targets, concentrations
    - Add patient genotype information
 
-3. **Normalization** (``scripts/8.normalization.py``)
+3. **Normalization**
 
    - Z-score normalization per plate
    - Standardize features: ``(x - μ) / σ``
    - Handle batch effects
 
-4. **Feature Selection** (``scripts/9.feature_selection.py``)
+4. **Feature Selection**
 
    - Remove low-variance features
    - Filter correlated features (correlation > 0.9)
    - Drop blocklisted features
    - Apply frequency cutoff for categorical features
 
-5. **Aggregation** (``scripts/10.aggregation.py``)
+5. **Aggregation**
 
    - Calculate well-level statistics (mean, median, std)
    - Generate organoid-parent aggregations
    - Compute patient-level summaries
 
-6. **Consensus Profiles** (``scripts/11.merge_consensus_profiles.py``)
+6. **Consensus Profiles**
 
    - Merge sc and organoid aggregations
    - Create hierarchical profile structure
    - Export final consensus matrices
 
-7. **QC Filtering** (``scripts/5a.organoid_qc.py``, ``scripts/5b.single_cell_qc.py``)
+7. **QC Filtering**
 
    - Apply image QC flags from Stage 1
    - Remove outlier objects (z-score > 3)
    - Filter low-quality wells
 
-8. **Patient Combination** (``scripts/12.combine_patients.py``)
+8. **Patient Combination**
 
    - Merge profiles across all patients
    - Apply global feature selection
    - Generate all-patient consensus profiles
 
 **Output Levels:**
+
 - **Single-cell:** One row per nucleus/cell
 - **Organoid:** One row per organoid (aggregated from cells)
 - **Well:** One row per well FOV (aggregated from organoids)
 - **Patient:** One row per patient/treatment (aggregated from wells)
 
 **Inputs:**
+
 - Feature CSV files from Stage 3
 - Metadata: plate maps, treatment info, QC flags
 
 **Outputs:**
+
 - ``data/{patient}/image_based_profiles/sc.parquet`` - Single-cell profiles
 - ``data/{patient}/image_based_profiles/organoid.parquet`` - Organoid profiles
 - ``data/all_patient_profiles/sc_consensus.parquet`` - Cross-patient SC
@@ -310,6 +314,7 @@ Process Steps
 - ``data/all_patient_profiles/patient_aggregated.parquet`` - Patient-level
 
 **Feature Selection Parameters:**
+
 - Correlation threshold: 0.9
 - Variance threshold: 0.01
 - NA cutoff: 5%
@@ -389,20 +394,24 @@ File Naming Conventions
 --------------------------------------------------
 
 **Z-Stack Images:**
+
 - Format: ``{channel}.tif`` where channel ∈ {405, 488, 555, 568, 640}
 - Dimensions: (Z, Y, X)
 - Data type: uint16
 
 **Segmentation Masks:**
+
 - Format: ``{compartment}_mask.tif``
 - Compartments: {organoid, nuclei, cell, cytoplasm}
 - Label encoding: Integer object IDs (0=background, 1-N=objects)
 
 **Feature Files:**
+
 - Format: ``{feature}_{compartment}_{channel}_{processor}_features.parquet``
 - Example: ``Intensity_Nuclei_405_GPU_features.parquet``
 
 **Profile Files:**
+
 - Format: Parquet (compressed columnar storage)
 - Naming: ``{level}_{aggregation}.parquet``
 - Example: ``sc_consensus.parquet``
@@ -430,6 +439,7 @@ The pipeline processes five fluorescent imaging channels:
    +--------+----------------------+--------+--------+----------+----------------+-------------------+
 
 **Imaging Parameters:**
+
 - Objective: 60x/1.35 NA oil immersion
 - Oil RI: 1.518
 - Voxel size: 0.108 µm (XY) × 1 µm (Z)
@@ -443,12 +453,14 @@ Hardware Specifications
 --------------------------------------------------
 
 **Local**
+
 - CPU: 24 cores @ 2.5 GHz
 - RAM: 128 GB
 - Storage: 20 TB free space
 - GPU: NVIDIA GeForce 3090Ti with 24 GB VRAM for acceleration
 
 **HPC Cluster (SLURM):**
+
 - Nodes: 100s of CPU compute nodes
 - Partition: amilan (CPU), aa100 (GPU)
 - QOS: normal (24h), long (7 days)
@@ -458,10 +470,12 @@ Software Environment
 --------------------------------------------------
 
 **Operating System:**
+
 - Linux (Ubuntu 20.04+, CentOS 7+)
 - macOS (limited support)
 
 **Conda Environments:**
+
 - ``GFF_preprocessing``: Data ingestion and z-stack creation
 - ``GFF_segmentation``: Cellpose, SAM-Med3D for segmentation
 - ``GFF_DL_featurization``: Deep learning feature extraction
@@ -470,6 +484,7 @@ Software Environment
 - ``gff_figure_env``: R visualization (ggplot2, tidyverse)
 
 **Key Dependencies:**
+
 - Python 3.9-3.11
 - PyTorch 2.0+ (with CUDA 11.8+)
 - Cellpose 3.x, 4.x
@@ -503,6 +518,7 @@ Runtime Estimates
    +----------------------------+----------+---------------------------+
 
 **Storage Requirements:**
+
 - Raw images: 250-500 MB/well FOV
 - Z-stacks: 250-500 MB/well FOV
 - Masks: 250-500 MB/well FOV

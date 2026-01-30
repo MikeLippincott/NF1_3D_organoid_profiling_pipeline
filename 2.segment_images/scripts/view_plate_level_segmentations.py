@@ -55,12 +55,13 @@ patients_file_path = pathlib.Path(f"{root_dir}/data/patient_IDs.txt").resolve(
 patients = pd.read_csv(patients_file_path, header=None)[0].tolist()
 
 
-# In[3]:
+# In[ ]:
 
 
 def plot_plate_overview(
     plate: str,
     image_sub_string_to_search: str,
+    title_for_substring: str,
     available_wells: dict,
     layout: int = "96",
     image_color_map: str = "nipy_spectral",
@@ -99,7 +100,7 @@ def plot_plate_overview(
     )
     fontsize = 16
     fig.suptitle(
-        f"{layout}-Well Plate Overview - Plate: {plate}",
+        f"{layout}-Well Plate Overview\nPlate: {plate}\n{title_for_substring}",
         fontsize=fontsize,
         fontweight="bold",
         y=0.98,
@@ -168,7 +169,7 @@ def plot_plate_overview(
     return fig
 
 
-# In[4]:
+# In[ ]:
 
 
 for patient in tqdm.tqdm(
@@ -204,9 +205,20 @@ for patient in tqdm.tqdm(
     for channel in tqdm.tqdm(
         channels_to_show, desc="Generating channel platemaps", leave=False
     ):
+        if channel == "405":
+            channel_title = "Hoechst - 405nm"
+        elif channel == "488":
+            channel_title = "Endoplasmic Reticulum - 488nm"
+        elif channel == "555":
+            channel_title = "AGP - 555nm"
+        elif channel == "640":
+            channel_title = "Mitochondria - 640nm"
+        else:
+            channel_title = channel
         fig = plot_plate_overview(
             plate=patient,
             image_sub_string_to_search=channel,
+            title_for_substring=channel_title,
             available_wells=image_available_wells,
             layout="96",
             image_color_map="inferno",
@@ -222,6 +234,14 @@ for patient in tqdm.tqdm(
         )
         plt.close(fig)
     for mask in tqdm.tqdm(masks_to_show, desc="Generating mask platemaps", leave=False):
+        if mask == "organoid":
+            mask_title = "Organoid Mask"
+        elif mask == "nuclei":
+            mask_title = "Nuclei Mask"
+        elif mask == "cell":
+            mask_title = "Cell Mask"
+        else:
+            mask_title = mask
         fig = plot_plate_overview(
             plate=patient,
             image_sub_string_to_search=mask,

@@ -3,12 +3,12 @@
 
 # In[1]:
 
-
 import argparse
 import os
 import pathlib
 import string
 import time
+
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -34,12 +34,10 @@ else:
 if not in_notebook:
     args = parse_args()
     clip_limit = args["clip_limit"]
-    well_fov = args["well_fov"]
     patient = args["patient"]
     input_subparent_name = args["input_subparent_name"]
     mask_subparent_name = args["mask_subparent_name"]
     check_for_missing_args(
-        well_fov=well_fov,
         patient=patient,
         input_subparent_name=input_subparent_name,
         mask_subparent_name=mask_subparent_name,
@@ -47,29 +45,25 @@ if not in_notebook:
 else:
     print("Running in a notebook")
     patient = "NF0014_T1"
-    well_fov = "C4-2"
     input_subparent_name = "zstack_images"
     mask_subparent_name = "segmentation_masks"
 
 
-window_size = 2
-input_dir = pathlib.Path(
-    f"{image_base_dir}/data/{patient}/{input_subparent_name}/"
-).resolve(strict=True)
-mask_path = pathlib.Path(
-    f"{image_base_dir}/data/{patient}/{mask_subparent_name}/"
-).resolve()
-mask_path.mkdir(exist_ok=True, parents=True)
 figures_path = pathlib.Path(f"../figures/platemaps/").resolve()
 figures_path.mkdir(parents=True, exist_ok=True)
+patients_file_path = pathlib.Path(f"{root_dir}/data/patient_IDs.txt").resolve(
+    strict=True
+)
+patients = pd.read_csv(patients_file_path, header=None)[0].tolist()
 
 
-# In[3]:
+# In[ ]:
 
 
 def plot_plate_overview(
     plate: str,
     image_sub_string_to_search: str,
+    title_for_substring: str,
     available_wells: dict,
     layout: int = "96",
     image_color_map: str = "nipy_spectral",
@@ -108,7 +102,7 @@ def plot_plate_overview(
     )
     fontsize = 16
     fig.suptitle(
-        f"{layout}-Well Plate Overview - Plate: {plate}",
+        f"{layout}-Well Plate Overview\nPlate: {plate}\n{title_for_substring}",
         fontsize=fontsize,
         fontweight="bold",
         y=0.98,
@@ -177,61 +171,93 @@ def plot_plate_overview(
     return fig
 
 
-# In[4]:
+# In[ ]:
 
 
-well_fovs = mask_path.glob("*")
-mask_available_wells = {}
-for well_fov_path in well_fovs:
-    if not well_fov_path.is_dir():
-        continue
-    well_fov_name = well_fov_path.stem.split("-")[0]
-    mask_available_wells[well_fov_name] = well_fov_path
+for patient in tqdm.tqdm(
+    patients, desc="Generating platemaps for patients", unit="patient"
+):
+    input_dir = pathlib.Path(
+        f"{image_base_dir}/data/{patient}/{input_subparent_name}/"
+    ).resolve(strict=True)
+    mask_path = pathlib.Path(
+        f"{image_base_dir}/data/{patient}/{mask_subparent_name}/"
+    ).resolve(strict=True)
+    # get the well_fov paths
+    well_fovs = mask_path.glob("*")
+    mask_available_wells = {}
+    for well_fov_path in well_fovs:
+        if not well_fov_path.is_dir():
+            continue
+        well_fov_name = well_fov_path.stem.split("-")[0]
+        mask_available_wells[well_fov_name] = well_fov_path
 
-well_fovs = input_dir.glob("*")
-image_available_wells = {}
-for well_fov_path in well_fovs:
-    if not well_fov_path.is_dir():
-        continue
-    well_fov_name = well_fov_path.stem.split("-")[0]
-    image_available_wells[well_fov_name] = well_fov_path
+    well_fovs = input_dir.glob("*")
+    image_available_wells = {}
+    for well_fov_path in well_fovs:
+        if not well_fov_path.is_dir():
+            continue
+        well_fov_name = well_fov_path.stem.split("-")[0]
+        image_available_wells[well_fov_name] = well_fov_path
 
+    # plot and save the plate view
+    channels_to_show = ["405", "488", "555", "640"]
+    masks_to_show = ["organoid", "nuclei", "cell"]
 
-# In[5]:
-
-
-channels_to_show = ["405", "488", "555", "640"]
-masks_to_show = [
-    # "organoid",
-    "nuclei",
-    "cell",
-]
-
-for channel in tqdm.tqdm(channels_to_show, desc="Generating channel platemaps"):
-    fig = plot_plate_overview(
-        plate=patient,
-        image_sub_string_to_search=channel,
-        available_wells=image_available_wells,
-        layout="96",
-        image_color_map="inferno",
-    )
-    # Save using matplotlib
-    output_path = figures_path / f"{patient}_platemap_{channel}.png"
-    fig.savefig(
-        output_path, dpi=600, bbox_inches="tight", facecolor="white", edgecolor="none"
-    )
-    plt.close(fig)
-for mask in tqdm.tqdm(masks_to_show, desc="Generating mask platemaps"):
-    fig = plot_plate_overview(
-        plate=patient,
-        image_sub_string_to_search=mask,
-        available_wells=mask_available_wells,
-        layout="96",
-        image_color_map="nipy_spectral",
-    )
-    # Save using matplotlib
-    output_path = figures_path / f"{patient}_platemap_{mask}.png"
-    fig.savefig(
-        output_path, dpi=600, bbox_inches="tight", facecolor="white", edgecolor="none"
-    )
-    plt.close(fig)
+    for channel in tqdm.tqdm(
+        channels_to_show, desc="Generating channel platemaps", leave=False
+    ):
+        if channel == "405":
+            channel_title = "Hoechst - 405nm"
+        elif channel == "488":
+            channel_title = "Endoplasmic Reticulum - 488nm"
+        elif channel == "555":
+            channel_title = "AGP - 555nm"
+        elif channel == "640":
+            channel_title = "Mitochondria - 640nm"
+        else:
+            channel_title = channel
+        fig = plot_plate_overview(
+            plate=patient,
+            image_sub_string_to_search=channel,
+            title_for_substring=channel_title,
+            available_wells=image_available_wells,
+            layout="96",
+            image_color_map="inferno",
+        )
+        # Save using matplotlib
+        output_path = figures_path / f"{patient}_platemap_{channel}.png"
+        fig.savefig(
+            output_path,
+            dpi=600,
+            bbox_inches="tight",
+            facecolor="white",
+            edgecolor="none",
+        )
+        plt.close(fig)
+    for mask in tqdm.tqdm(masks_to_show, desc="Generating mask platemaps", leave=False):
+        if mask == "organoid":
+            mask_title = "Organoid Mask"
+        elif mask == "nuclei":
+            mask_title = "Nuclei Mask"
+        elif mask == "cell":
+            mask_title = "Cell Mask"
+        else:
+            mask_title = mask
+        fig = plot_plate_overview(
+            plate=patient,
+            image_sub_string_to_search=mask,
+            available_wells=mask_available_wells,
+            layout="96",
+            image_color_map="nipy_spectral",
+        )
+        # Save using matplotlib
+        output_path = figures_path / f"{patient}_platemap_{mask}.png"
+        fig.savefig(
+            output_path,
+            dpi=600,
+            bbox_inches="tight",
+            facecolor="white",
+            edgecolor="none",
+        )
+        plt.close(fig)

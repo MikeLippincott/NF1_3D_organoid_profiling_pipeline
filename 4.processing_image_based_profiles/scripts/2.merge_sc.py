@@ -4,8 +4,11 @@
 # In[1]:
 
 
+import argparse
 import os
 import pathlib
+import sys
+import uuid
 
 import duckdb
 import pandas as pd
@@ -33,7 +36,7 @@ if not in_notebook:
 
 else:
     patient = "NF0014_T1"
-    well_fov = "G2-2"
+    well_fov = "C4-2"
     image_based_profiles_subparent_name = "image_based_profiles"
 
 

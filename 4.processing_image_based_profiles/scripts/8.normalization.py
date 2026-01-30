@@ -137,6 +137,9 @@ organoid_features_columns = [
     if col not in organoid_metadata_columns
 ]
 # Replace inf values with NaN for organoid profiles
+# count the inf values and replace with NaN
+inf_count = np.isinf(organoid_annotated_profiles[organoid_features_columns]).sum().sum()
+print(f"Number of inf values in organoid profiles: {inf_count}")
 organoid_annotated_profiles[organoid_features_columns] = organoid_annotated_profiles[
     organoid_features_columns
 ].replace([np.inf, -np.inf], np.nan)

@@ -197,3 +197,6 @@ profile_prep_for_sage/data_for_sage/*
 3.cellprofiling/models/*
 7.technical_analysis/processed_data/*
 7.technical_analysis/results/*
+3.cellprofiling/logs/*
+models/*
+2.segment_images/figures/*

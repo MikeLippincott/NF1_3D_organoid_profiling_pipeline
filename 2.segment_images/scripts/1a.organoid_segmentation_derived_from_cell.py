@@ -59,7 +59,7 @@ if not in_notebook:
 else:
     print("Running in a notebook")
     patient = "NF0014_T1"
-    well_fov = "D10-1"
+    well_fov = "G4-1"
     input_subparent_name = "zstack_images"
     mask_subparent_name = "segmentation_masks"
 
@@ -94,7 +94,7 @@ cell_mask_path = pathlib.Path(f"{mask_path}/cell_mask.tiff")
 cell_mask = read_zstack_image(cell_mask_path)
 
 
-# In[6]:
+# In[7]:
 
 
 # convert the cell masks to binary masks

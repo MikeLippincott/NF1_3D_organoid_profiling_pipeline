@@ -23,7 +23,7 @@ for well_fov in "$data_dir"*/; do
     echo "Patient: $patient, WellFOV: $well_fov,  Input Subparent Name: $input_subparent_name, Mask Subparent Name: $mask_subparent_name"
 
     echo "Beginning segmentation for $patient - $well_fov"
-    # python 0.nuclei_segmentation.py --patient "$patient" --well_fov "$well_fov" --input_subparent_name "$input_subparent_name" --mask_subparent_name "$mask_subparent_name" --clip_limit 0.01
+    python 0.nuclei_segmentation.py --patient "$patient" --well_fov "$well_fov" --input_subparent_name "$input_subparent_name" --mask_subparent_name "$mask_subparent_name" --clip_limit 0.01
     python run_each_segmentation.py --patient "$patient" --well_fov "$well_fov" --input_subparent_name "$input_subparent_name" --mask_subparent_name "$mask_subparent_name" --clip_limit 0.01
 
     # python 1.segmentation.py --patient "$patient" --well_fov "$well_fov" --input_subparent_name "$input_subparent_name" --mask_subparent_name "$mask_subparent_name"

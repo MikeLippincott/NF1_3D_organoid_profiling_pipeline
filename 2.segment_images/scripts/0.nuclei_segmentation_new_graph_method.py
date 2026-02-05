@@ -71,7 +71,7 @@ if not in_notebook:
 else:
     print("Running in a notebook")
     patient = "NF0014_T1"
-    well_fov = "D2-1"
+    well_fov = "C4-2"
     window_size = 3
     clip_limit = 0.01
     input_subparent_name = "zstack_images"
@@ -629,10 +629,16 @@ nuclei_masks = np.array(  # convert to array
 # In[8]:
 
 
+# Remove small objects while preserving label IDs
+# we avoid using the built-in skimage function to preserve label IDs
 for z in range(nuclei_masks.shape[0]):
-    nuclei_masks[z] = skimage.morphology.remove_small_objects(
-        nuclei_masks[z], min_size=50, connectivity=1
-    )
+    labeled_slice = nuclei_masks[z]
+    props = skimage.measure.regionprops(labeled_slice)
+
+    # Remove objects smaller than threshold
+    for prop in props:
+        if prop.area < 500:  # min size threshold (adjust as needed)
+            nuclei_masks[z][labeled_slice == prop.label] = 0
 
 
 # In[9]:
@@ -663,7 +669,7 @@ nuclei_mask, diag = full_pipeline(nuclei_masks, max_match_distance=100)
 
 # ## relabel the nuclei
 
-# In[11]:
+# In[ ]:
 
 
 nuclei_mask, _, _ = relabel_sequential(nuclei_mask)
@@ -672,9 +678,17 @@ nuclei_mask, _, _ = relabel_sequential(nuclei_mask)
 # In[12]:
 
 
-plt.imshow(nuclei_mask[8], cmap="nipy_spectral")
-plt.title("Nuclei Masks After 3D Graph-Based Segmentation")
-plt.show()
+for z in range(nuclei_mask.shape[0]):
+    plt.figure(figsize=(10, 4))
+    plt.subplot(121)
+    plt.imshow(nuclei[z], cmap="inferno")
+    plt.title("Nuclei Masks After 3D Graph-Based Segmentation")
+    plt.axis("off")
+    plt.subplot(122)
+    plt.imshow(nuclei_mask[z], cmap="nipy_spectral")
+    plt.title("Nuclei Masks After 2D Segmentation")
+    plt.axis("off")
+    plt.show()
 
 
 # ## Save the segmented masks
@@ -682,11 +696,11 @@ plt.show()
 # In[13]:
 
 
-nuclei_mask_output = pathlib.Path(f"{mask_path}/nuclei_mask_new.tiff")
+nuclei_mask_output = pathlib.Path(f"{mask_path}/nuclei_mask.tiff")
 tifffile.imwrite(nuclei_mask_output, nuclei_mask)
 
 
-# In[ ]:
+# In[14]:
 
 
 end_mem = psutil.Process(os.getpid()).memory_info().rss / 1024**2

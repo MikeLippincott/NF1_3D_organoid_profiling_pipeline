@@ -6,7 +6,6 @@
 
 import itertools
 import pathlib
-from itertools import product
 
 import numpy as np
 import pandas as pd

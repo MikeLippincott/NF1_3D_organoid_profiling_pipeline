@@ -4,12 +4,9 @@
 # This runs all segmentation operations in one place.
 # The idea is that this should be faster and easier to envoke as we only have to load the image data once instead of N times (~10).
 # Running each individual task as its own script is modular but requires overhead to load the data each time.
-# Currently it takes about 15 minutes to complete a single organoid's segmentation for all compartments... (~50,1500,1500) (Z,Y,X) dimensional image.
-# Let us see how long this takes!
 #
-# No we are at ~8 minutes!
 
-# In[1]:
+# In[ ]:
 
 
 import argparse
@@ -36,7 +33,7 @@ from organoid_segmentation import *
 from segmentation_decoupling import *
 from skimage.filters import sobel
 
-# In[2]:
+# In[ ]:
 
 
 start_time = time.time()
@@ -44,7 +41,7 @@ start_time = time.time()
 start_mem = psutil.Process(os.getpid()).memory_info().rss / 1024**2
 
 
-# In[3]:
+# In[ ]:
 
 
 root_dir, in_notebook = init_notebook()
@@ -54,7 +51,7 @@ image_base_dir = bandicoot_check(
 )
 
 
-# In[4]:
+# In[ ]:
 
 
 if not in_notebook:
@@ -74,7 +71,7 @@ if not in_notebook:
 else:
     print("Running in a notebook")
     patient = "NF0014_T1"
-    well_fov = "C4-1"
+    well_fov = "C8-1"
     clip_limit = 0.01
     input_subparent_name = "zstack_images"
     mask_subparent_name = "segmentation_masks"
@@ -90,7 +87,7 @@ mask_path = pathlib.Path(
 mask_path.mkdir(exist_ok=True, parents=True)
 
 
-# In[5]:
+# In[ ]:
 
 
 # look up the morphology of the organoid from json file
@@ -104,8 +101,10 @@ morphology = organoid_image_labels_df.loc[
 ].values[0]
 print(f"Organoid morphology for {well_fov}: {morphology}")
 
+morphology = "globular"  # FOR TESTING ONLY - REMOVE LATER
 
-# In[6]:
+
+# In[ ]:
 
 
 return_dict = read_in_channels(
@@ -258,7 +257,7 @@ def perform_morphology_dependent_segmentation(
     return cell_mask
 
 
-# In[26]:
+# In[ ]:
 
 
 cell_mask = perform_morphology_dependent_segmentation(
@@ -273,13 +272,17 @@ cell_mask = perform_morphology_dependent_segmentation(
 
 if in_notebook:
     plt.figure(figsize=(10, 10))
-    plt.subplot(121)
+    plt.subplot(131)
     plt.imshow(cyto2[cyto2.shape[0] // 2], cmap="inferno")
     plt.title("Cytoplasm Signal (Cyto2)")
     plt.axis("off")
-    plt.subplot(122)
+    plt.subplot(132)
     plt.imshow(cell_mask[cell_mask.shape[0] // 2], cmap="nipy_spectral")
     plt.title(f"Segmented Cell Mask - Morphology: {morphology}")
+    plt.axis("off")
+    plt.subplot(133)
+    plt.imshow(nuclei_mask[nuclei_mask.shape[0] // 2], cmap="nipy_spectral")
+    plt.title("Nuclei Mask")
     plt.axis("off")
     plt.show()
 
@@ -287,7 +290,7 @@ if in_notebook:
 # ## run the mask reassignment function (post-hoc)
 # ### This needs to occur after both nuclei and cell segmentations are done
 
-# In[29]:
+# In[ ]:
 
 
 cell_df = get_labels_for_post_hoc_reassignment(
@@ -298,7 +301,7 @@ nuclei_df = get_labels_for_post_hoc_reassignment(
 )
 
 
-# In[30]:
+# In[ ]:
 
 
 nuclei_mask, reassigned_nuclei_df = run_post_hoc_mask_reassignment(
@@ -310,19 +313,23 @@ nuclei_mask, reassigned_nuclei_df = run_post_hoc_mask_reassignment(
 )
 
 
-# In[31]:
+# In[ ]:
 
 
+cell_mask_output = pathlib.Path(f"{mask_path}/cell_mask.tiff")
+tifffile.imwrite(cell_mask_output, cell_mask.astype(np.uint16))
 # refine the nuclei masks
 cell_mask = run_post_hoc_refinement(
     mask_image=cell_mask,
     sliding_window_context=3,
 )
+cell_mask_output = pathlib.Path(f"{mask_path}/cell_mask_post_hoc.tiff")
+tifffile.imwrite(cell_mask_output, cell_mask.astype(np.uint16))
 
 
 # ## Cytoplasm Segmentation
 
-# In[32]:
+# In[ ]:
 
 
 cytoplasm_mask = create_cytoplasm_masks(
@@ -333,7 +340,7 @@ cytoplasm_mask = create_cytoplasm_masks(
 
 # ## Organoid segmentation (derived from cell segmentation)
 
-# In[33]:
+# In[ ]:
 
 
 # convert the cell masks to binary masks
@@ -341,18 +348,18 @@ cell_binary_mask = cell_mask.copy()
 cell_binary_mask[cell_binary_mask > 0] = 1
 # dilate the cell masks slightly
 cell_binary_mask = skimage.morphology.binary_dilation(
-    cell_binary_mask, skimage.morphology.ball(10)
+    cell_binary_mask, skimage.morphology.ball(1)
 )
 # convert back to instance mask
 # make sure each instance has a unique integer label
 organoid_mask = skimage.measure.label(cell_binary_mask)
 
 
-# In[34]:
+# In[ ]:
 
 
 if in_notebook:
-    z = 8
+    z = cell_mask.shape[0] // 2
     plt.figure(figsize=(10, 10))
     plt.subplot(131)
     plt.title("Nuclei Mask")
@@ -371,15 +378,15 @@ if in_notebook:
 
 # ## Save the segmented masks
 
-# In[35]:
+# In[ ]:
 
 
 nuclei_mask_output = pathlib.Path(f"{mask_path}/nuclei_mask.tiff")
-cell_mask_output = pathlib.Path(f"{mask_path}/cell_mask.tiff")
+# cell_mask_output = pathlib.Path(f"{mask_path}/cell_mask.tiff")
 cytoplasm_mask_output = pathlib.Path(f"{mask_path}/cytoplasm_mask.tiff")
 organoid_mask_output = pathlib.Path(f"{mask_path}/organoid_mask.tiff")
 tifffile.imwrite(nuclei_mask_output, nuclei_mask)
-tifffile.imwrite(cell_mask_output, cell_mask)
+# tifffile.imwrite(cell_mask_output, cell_mask)
 tifffile.imwrite(cytoplasm_mask_output, cytoplasm_mask)
 tifffile.imwrite(organoid_mask_output, organoid_mask)
 

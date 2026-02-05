@@ -142,7 +142,7 @@ def label_images_keypress(
             continue
         image = read_zstack_image(image_path)
         # load the middle slice to check if there is anything there
-        mid_slice = image.shape[0] // 2
+        mid_slice = image.shape[0] // 4
         image_mid = image[mid_slice, :, :]
         fig, ax = plt.subplots(figsize=(5, 5))
         ax.imshow(image_mid, cmap="inferno")
@@ -175,41 +175,19 @@ root_dir, in_notebook = init_notebook()
 image_base_dir = bandicoot_check(
     pathlib.Path(os.path.expanduser("~/mnt/bandicoot")).resolve(), root_dir
 )
+patient_list_file_path = pathlib.Path(f"{root_dir}/data/patient_IDs.txt").resolve(
+    strict=True
+)
 
 
 # In[5]:
 
 
-if not in_notebook:
-    args = parse_args()
-    clip_limit = args["clip_limit"]
-    well_fov = args["well_fov"]
-    patient = args["patient"]
-    input_subparent_name = args["input_subparent_name"]
-    mask_subparent_name = args["mask_subparent_name"]
-    check_for_missing_args(
-        well_fov=well_fov,
-        patient=patient,
-        clip_limit=clip_limit,
-        input_subparent_name=input_subparent_name,
-        mask_subparent_name=mask_subparent_name,
-    )
-else:
-    print("Running in a notebook")
-    patient = "NF0014_T1"
-    input_subparent_name = "zstack_images"
-    mask_subparent_name = "segmentation_masks"
-
-
-input_dir = pathlib.Path(
-    f"{image_base_dir}/data/{patient}/{input_subparent_name}/"
-).resolve(strict=True)
-mask_path = pathlib.Path(
-    f"{image_base_dir}/data/{patient}/{mask_subparent_name}/"
-).resolve()
-mask_path.mkdir(exist_ok=True, parents=True)
 labels_save_file = pathlib.Path(
     "../image_labels/organoid_image_labels.parquet"
+).resolve()
+labels_save_file_bandicoot = pathlib.Path(
+    f"{image_base_dir}/data/organoid_image_labels/organoid_image_labels.parquet"
 ).resolve()
 labels_save_file.parent.mkdir(exist_ok=True, parents=True)
 
@@ -217,16 +195,27 @@ labels_save_file.parent.mkdir(exist_ok=True, parents=True)
 # In[6]:
 
 
-# get all well fovs for this patient
-all_well_fovs = input_dir.glob("*")
-all_well_fovs = sorted([wf.name for wf in all_well_fovs if wf.is_dir()])
+patients = pd.read_csv(patient_list_file_path, header=None)[0].tolist()
 images_to_process = {"patient": [], "well_fov": [], "image_path": []}
-for well_fov in tqdm.tqdm(all_well_fovs):
-    image_path = pathlib.Path(f"{input_dir}/{well_fov}/").resolve(strict=True)
-    image_to_load = [x for x in image_path.glob("*.tif") if "555" in x.name]
-    images_to_process["patient"].append(patient)
-    images_to_process["well_fov"].append(well_fov)
-    images_to_process["image_path"].append(image_to_load)
+
+for patient_id in tqdm.tqdm(patients):
+    input_subparent_name = "zstack_images"
+    image_dir = pathlib.Path(
+        f"{image_base_dir}/data/{patient_id}/{input_subparent_name}"
+    )
+    well_fovs = sorted([d for d in image_dir.iterdir() if d.is_dir()])
+    for well_fov_path in well_fovs:
+        well_fov = well_fov_path.name
+
+        images_to_process["patient"].append(patient_id)
+        images_to_process["well_fov"].append(well_fov)
+        images_to_process["image_path"].append(
+            pathlib.Path(f"{image_dir}/{well_fov}/{well_fov}_555.tif")
+        )
+
+df = pd.DataFrame(images_to_process)
+print(f"Images to process: {len(df)}")
+df.head()
 
 
 # In[7]:
@@ -235,13 +224,14 @@ for well_fov in tqdm.tqdm(all_well_fovs):
 label_map = {"1": "globular", "2": "dissociated", "3": "small", "4": "elongated"}
 
 
-# In[8]:
+# In[ ]:
 
 
 labels = label_images_keypress(images_to_process, label_map, labels_save_file)
+save_labels(labels, labels_save_file_bandicoot)
 
 
-# In[9]:
+# In[ ]:
 
 
 labels = read_labels(labels_save_file)

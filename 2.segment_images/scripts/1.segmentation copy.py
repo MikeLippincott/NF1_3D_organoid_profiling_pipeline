@@ -9,7 +9,7 @@
 #
 # No we are at ~8 minutes!
 
-# In[8]:
+# In[1]:
 
 
 import argparse
@@ -34,9 +34,8 @@ from general_segmentation_utils import *
 from notebook_init_utils import bandicoot_check, init_notebook
 from organoid_segmentation import *
 from segmentation_decoupling import *
-from skimage.filters import sobel
 
-# In[9]:
+# In[2]:
 
 
 start_time = time.time()
@@ -44,7 +43,7 @@ start_time = time.time()
 start_mem = psutil.Process(os.getpid()).memory_info().rss / 1024**2
 
 
-# In[10]:
+# In[3]:
 
 
 root_dir, in_notebook = init_notebook()
@@ -54,7 +53,7 @@ image_base_dir = bandicoot_check(
 )
 
 
-# In[11]:
+# In[4]:
 
 
 if not in_notebook:
@@ -74,7 +73,7 @@ if not in_notebook:
 else:
     print("Running in a notebook")
     patient = "NF0014_T1"
-    well_fov = "D10-1"
+    well_fov = "C4-2"
     clip_limit = 0.01
     input_subparent_name = "zstack_images"
     mask_subparent_name = "segmentation_masks"
@@ -90,22 +89,22 @@ mask_path = pathlib.Path(
 mask_path.mkdir(exist_ok=True, parents=True)
 
 
-# In[15]:
+# In[5]:
 
 
 # look up the morphology of the organoid from json file
-json_file_path = pathlib.Path("./organoid_image_labels.json").resolve(strict=True)
-with open(json_file_path, "r") as f:
-    organoid_image_labels = json.load(f)
-organoid_image_labels_df = pd.DataFrame(organoid_image_labels)
-# look up the morphology for this well_fov
-morphology = organoid_image_labels_df.loc[
-    organoid_image_labels_df["well_fov"] == well_fov, "label"
-].values[0]
-morphology
+# json_file_path = pathlib.Path("./organoid_image_labels.json").resolve(strict=True)
+# with open(json_file_path, "r") as f:
+#     organoid_image_labels = json.load(f)
+# organoid_image_labels_df = pd.DataFrame(organoid_image_labels)
+# # look up the morphology for this well_fov
+# morphology = organoid_image_labels_df.loc[
+#     organoid_image_labels_df["well_fov"] == well_fov, "label"
+# ].values[0]
+morphology = "globular"
 
 
-# In[16]:
+# In[6]:
 
 
 return_dict = read_in_channels(
@@ -135,7 +134,7 @@ del cyto2_raw
 # This is done in a separate notebook `1a.organoid_segmentation_derived_from_cell.ipynb`.
 # This code is effectively deprecated.
 
-# In[17]:
+# In[7]:
 
 
 # cyto2_image_shape = cyto2.shape
@@ -176,7 +175,7 @@ del cyto2_raw
 # del filtered_cyto2
 
 
-# In[18]:
+# In[8]:
 
 
 # organoid_masks = np.array(
@@ -194,7 +193,7 @@ del cyto2_raw
 # )
 
 
-# In[8]:
+# In[9]:
 
 
 # # generate the coordinates dataframe for reconstruction
@@ -216,26 +215,28 @@ del cyto2_raw
 
 # ## Segment the cells
 
-# In[9]:
+# In[10]:
 
 
 def segment_cells_with_3D_watershed(
-    cyto_signal: np.ndarray,
-    nuclei_mask: np.ndarray,
+    cyto_signal: np.ndarray, nuclei_mask: np.ndarray, masked_region: np.ndarray
 ) -> np.ndarray:
     # gaussian filter to smooth the image
-    cell_signal_image = skimage.filters.gaussian(cyto_signal, sigma=1.0)
-    # scale the pixels to max 255
-    nuclei_mask = (nuclei_mask / nuclei_mask.max() * 255).astype(np.uint8)
-    # generate the elevation map using the Sobel filter
-    elevation_map = sobel(cell_signal_image)
+    # cell_signal_image = skimage.filters.gaussian(cyto_signal, sigma=1.0)
+    # # scale the pixels to max 255
+    # nuclei_mask = (nuclei_mask / nuclei_mask.max() * 255).astype(np.uint8)
+    # # generate the elevation map using the Sobel filter
+    # elevation_map = sobel(cell_signal_image)
 
     # set up seeded watersheding where the nuclei masks are used as seeds
     # note: the cytoplasm is used as the signal for this.
-
     labels = skimage.segmentation.watershed(
-        image=elevation_map,
+        image=cyto_signal,
         markers=nuclei_mask,
+        mask=masked_region,
+        connectivity=0,
+        compactness=0,
+        watershed_line=True,
     )
 
     # change the largest label (by area) to 0
@@ -243,7 +244,7 @@ def segment_cells_with_3D_watershed(
     unique, counts = np.unique(labels, return_counts=True)
     largest_label = unique[np.argmax(counts)]
     labels[labels == largest_label] = 0
-    cell_mask = labels.copy()
+    # cell_mask = labels.copy()
     # cell_mask = run_post_hoc_refinement(
     #     mask_image=cell_mask,
     #     sliding_window_context=3,
@@ -251,163 +252,274 @@ def segment_cells_with_3D_watershed(
     return labels
 
 
-# In[10]:
+# In[11]:
 
 
 cmap_option = "magma"
 
 
-# In[11]:
-
-
-elevation_map_1 = skimage.filters.butterworth(
-    cyto2,
-    cutoff_frequency_ratio=0.08,
-    order=2,
-    high_pass=False,
-    squared_butterworth=False,
-)
-elevation_map_2 = skimage.filters.butterworth(
-    cyto2,
-    cutoff_frequency_ratio=0.08,
-    order=2,
-    high_pass=True,
-    squared_butterworth=False,
-)
-plt.figure(figsize=(12, 8))
-plt.subplot(131)
-plt.imshow(cyto2[cyto2.shape[0] // 2], cmap=cmap_option)
-plt.title("Cyto2 Image")
-plt.axis("off")
-plt.subplot(132)
-plt.imshow(elevation_map_1[cyto2.shape[0] // 2], cmap=cmap_option)
-plt.title("Low-pass Butterworth filter")
-plt.axis("off")
-plt.subplot(133)
-plt.imshow(elevation_map_2[cyto2.shape[0] // 2], cmap=cmap_option)
-plt.title("High-pass Butterworth filter")
-plt.axis("off")
-plt.show()
-
-
 # In[12]:
 
 
-# threshold the elevation maps
-threshold_1 = skimage.filters.threshold_otsu(cyto2)
-threshold_2 = skimage.filters.threshold_otsu(elevation_map_1)
-threshold_3 = skimage.filters.threshold_otsu(elevation_map_2)
-binary_map_1 = cyto2 > threshold_1
-binary_map_2 = elevation_map_1 > threshold_2
-binary_map_3 = elevation_map_2 > threshold_3
+# elevation_map_1 = skimage.filters.butterworth(
+#     cyto2,
+#     cutoff_frequency_ratio=0.08,
+#     order=2,
+#     high_pass=False,
+#     squared_butterworth=False,
+# )
+# threshold = skimage.filters.threshold_otsu(elevation_map_1)
+# cyto2_threshold_signal = cyto2 > threshold
+# # remove small objects
+# for z in range(cyto2_threshold_signal.shape[0]):
+#     cyto2_threshold_signal[z] = skimage.morphology.remove_small_objects(
+#         cyto2_threshold_signal[z].astype(bool), min_size=500
+#     )
 
-max_proj = np.max(
-    [
-        binary_map_1,
-        binary_map_2,
-        # binary_map_3
-    ],
-    axis=0,
-)
-# dialte the max projection for better visualization
-max_proj = skimage.morphology.binary_dilation(
-    max_proj,
-    skimage.morphology.ball(2),
-)
-signal_from_max_proj = cyto2.copy()
-signal_from_max_proj[max_proj == False] = 0
+# # fill holes
+# for z in range(cyto2_threshold_signal.shape[0]):
+#     cyto2_threshold_signal[z] = scipy.ndimage.binary_fill_holes(
+#         cyto2_threshold_signal[z]
+#     )
+
+# plt.figure(figsize=(12, 8))
+# plt.subplot(131)
+# plt.imshow(cyto2[cyto2.shape[0] // 2], cmap=cmap_option)
+# plt.title("Cyto2 Image")
+# plt.axis("off")
+# plt.subplot(132)
+# plt.imshow(elevation_map_1[cyto2.shape[0] // 2], cmap=cmap_option)
+# plt.title("Low-pass Butterworth filter")
+# plt.axis("off")
+# plt.subplot(133)
+# plt.imshow(cyto2_threshold_signal[cyto2.shape[0] // 2],cmap="nipy_spectral")
+# plt.title("Otsu Threshold")
+# plt.axis("off")
+# plt.show()
 
 
-plt.figure(figsize=(12, 8))
-plt.subplot(241)
-plt.imshow(binary_map_1[cyto2.shape[0] // 2], cmap=cmap_option)
-plt.title("Binary Map - No filter")
-plt.axis("off")
-plt.subplot(242)
-plt.imshow(binary_map_2[cyto2.shape[0] // 2], cmap=cmap_option)
-plt.title("Binary Map - Low-pass")
-plt.axis("off")
-plt.subplot(243)
-plt.imshow(binary_map_3[cyto2.shape[0] // 2], cmap=cmap_option)
-plt.title("Binary Map - High-pass")
-plt.axis("off")
-plt.subplot(244)
-plt.imshow(max_proj[cyto2.shape[0] // 2], cmap=cmap_option)
-plt.title("Max Projection of Binary Maps")
-plt.axis("off")
-plt.subplot(245)
-plt.imshow(cyto2[cyto2.shape[0] // 2], cmap=cmap_option)
-plt.title("Cyto2 Image")
-
-plt.axis("off")
-plt.subplot(246)
-plt.imshow(elevation_map_1[cyto2.shape[0] // 2], cmap=cmap_option)
-plt.title("Elevation Map - Low-pass")
-
-plt.axis("off")
-plt.subplot(247)
-plt.imshow(elevation_map_2[cyto2.shape[0] // 2], cmap=cmap_option)
-plt.title("Elevation Map - High-pass")
-plt.axis("off")
-plt.subplot(248)
-plt.imshow(signal_from_max_proj[cyto2.shape[0] // 2], cmap=cmap_option)
-plt.title("Signal from Max Projection")
-plt.axis("off")
-plt.show()
+# In[ ]:
 
 
 # In[13]:
 
 
-# # set up proper distance transform and gradient descent parameters
-# cell_signal_image = skimage.filters.gaussian(cyto2, sigma=1.0)
-# elevation_map = skimage.filters.sobel(cell_signal_image)
-nuclei_mask_scaled = skimage.measure.label(nuclei_mask > 0)
-# # remove background marker
-# # get the markers
-# elevation_map = elevation_map_1
+# sampling=[1, 0.1, 0.1]
+
+# cyto_signal = cyto2.copy()
+# cyto_signal[cyto2_threshold_signal == 0] = 0
+# markers = nuclei_mask
+# masked_region = cyto2_threshold_signal
+
+# cyto_signal = skimage.filters.gaussian(cyto_signal, sigma=1.0)
+# cyto_signal = skimage.filters.sobel(cyto_signal)
+# plt.figure(figsize=(12, 8))
+# plt.subplot(131)
+# plt.imshow(nuclei_mask[8], cmap="nipy_spectral")
+# plt.axis("off")
+# plt.title("Nuclei Mask Dilated")
+# plt.subplot(132)
+# plt.imshow(cyto_signal[8], cmap="inferno")
+# # plt.title(cyto_signal_name)
+# plt.axis("off")
+# plt.subplot(133)
+# plt.imshow(masked_region[8], cmap="nipy_spectral")
+# plt.title("Masked Region")
+# plt.axis("off")
+# plt.show()
+
+
+# In[14]:
+
+
+# import skimage.transform as skt
+# import numpy as np
+
+# def resample_isotropic(vol, spacing, order=1):
+#     # spacing = (z, y, x) in microns (or any consistent units)
+#     z, y, x = spacing
+#     scale = (z / x, 1.0, 1.0)  # target isotropic using x as reference
+#     out_shape = (
+#         int(vol.shape[0] * scale[0]),
+#         vol.shape[1],
+#         vol.shape[2],
+#     )
+#     return skt.resize(vol, out_shape, order=order, preserve_range=True, anti_aliasing=(order>0)).astype(vol.dtype)
+
+# # Example
+# spacing = (1.0, 0.1, 0.1)  # z, y, x
+# nuclei_iso = resample_isotropic(nuclei_mask, spacing, order=0)   # labels -> order=0
+# cyto_iso   = resample_isotropic(cyto_signal, spacing, order=1)     # images -> order=1
+# mask_iso = resample_isotropic(masked_region, spacing, order=0)   # labels -> order=0
+
+
+# In[15]:
+
+
 # labels = skimage.segmentation.watershed(
-#     image=elevation_map,
-#     markers=nuclei_mask,
-#     # connectivity=1
+#         image=cyto_signal,
+#         markers=nuclei_mask,
+#         mask=masked_region,
+#         connectivity=0, # 1
+#         compactness=0, # 0
+#     )
+# z = 12
+# plt.figure(figsize=(12, 8))
+# plt.subplot(131)
+# plt.imshow(nuclei_mask[z], cmap="nipy_spectral")
+# plt.axis("off")
+# plt.title("Nuclei Mask Dilated")
+# plt.subplot(132)
+# plt.imshow(cyto_signal[z], cmap="inferno")
+# # plt.title(cyto_signal_name)
+# plt.axis("off")
+# plt.subplot(133)
+# plt.imshow(labels[z], cmap="nipy_spectral")
+# plt.title("cell mask")
+# plt.axis("off")
+# plt.show()
+
+
+# In[16]:
+
+
+# print(len(np.unique(nuclei_mask)))
+# print(len(np.unique(labels)))
+
+
+# In[17]:
+
+
+# save_path = pathlib.Path(f"{mask_path}/cell_mask_new_watershed.tiff")
+# tifffile.imwrite(save_path, labels)
+
+
+# In[ ]:
+
+
+# In[18]:
+
+
+# labels = sequential_labeling(labels)
+
+
+# In[19]:
+
+
+# cell_df = get_labels_for_post_hoc_reassignment(
+#     compartment_mask=labels, compartment_name="cell"
 # )
-# unique, counts = np.unique(labels, return_counts=True)
-# largest_label = unique[np.argmax(counts)]
-# print(f"Largest label to remove: {largest_label}")
-# labels[labels == largest_label] = 0
-
-# cyto_signal=cyto2
-# cyto_signal=elevation_map_1
-cyto_signal = signal_from_max_proj
-# cyto_signal=max_proj
-
-cell_mask = segment_cells_with_3D_watershed(
-    cyto_signal=cyto_signal,
-    nuclei_mask=nuclei_mask_scaled,
-)
+# nuclei_df = get_labels_for_post_hoc_reassignment(
+#     compartment_mask=nuclei_mask, compartment_name="nuclei"
+# )
+# nuclei_mask, reassigned_nuclei_df = run_post_hoc_mask_reassignment(
+#     nuclei_mask=nuclei_mask,
+#     cell_mask=cell_mask,
+#     nuclei_df=nuclei_df,
+#     cell_df=cell_df,
+#     return_dataframe=True,
+# )
 
 
-for z in range(cyto2.shape[0]):
-    # z=cyto2.shape[0] // 2
-    plt.figure(figsize=(12, 8))
-    plt.subplot(131)
-    plt.title("Nuclei mask")
-    plt.imshow(nuclei_mask[z], cmap=cmap_option)
-    plt.axis("off")
-    plt.subplot(132)
-    plt.title("Cell Mask - Watershed")
-    plt.imshow(cell_mask[z], cmap=cmap_option)
-    plt.axis("off")
-    plt.subplot(133)
-    plt.title("Elevation Map")
-    plt.imshow(cyto_signal[z], cmap=cmap_option)
-    plt.axis("off")
-    plt.show()
+# In[20]:
+
+
+# labels = np.array(labels)
+# labels = run_post_hoc_refinement(
+#     mask_image=labels,
+#     sliding_window_context=3,
+# )
+# cell_mask_output = pathlib.Path(f"{mask_path}/cell_mask_watershed_posthoc.tiff")
+# tifffile.imwrite(cell_mask_output, labels)
+
+
+# In[ ]:
+
+
+# In[21]:
+
+
+# # butter
+# # sobel
+# # gauss
+# # butter - sobel
+# # butter - gauss
+# # sobel - butter
+# # sobel gauss
+# # gauss - sobel
+# # gauss - butter
+# # butter - sobel - gauss
+# # butter - gauss - sobel
+# # sobel - gauss - butter
+# # sobel - butter - gauss
+# # gauss - butter - sobel
+# # gauss - sobel - butter
+# butter = skimage.filters.butterworth(cyto2)
+# sobel = skimage.filters.sobel(cyto2)
+# gauss = skimage.filters.gaussian(cyto2)
+# butter_sobel = skimage.filters.butterworth(sobel)
+# butter_gauss = skimage.filters.butterworth(gauss)
+# sobel_butter = skimage.filters.sobel(butter)
+# sobel_gauss = skimage.filters.sobel(gauss)
+# gauss_sobel = skimage.filters.gaussian(sobel)
+# gauss_butter = skimage.filters.gaussian(butter)
+# butter_sobel_gauss = skimage.filters.butterworth(sobel_gauss)
+# butter_gauss_sobel = skimage.filters.butterworth(gauss_sobel)
+# sobel_gauss_butter = skimage.filters.sobel(gauss_butter)
+# sobel_butter_gauss = skimage.filters.sobel(butter_gauss)
+# gauss_butter_sobel = skimage.filters.gaussian(butter_sobel)
+# gauss_sobel_butter = skimage.filters.gaussian(sobel_butter)
+
+
+# In[22]:
+
+
+# cytosignals = {
+#     "butter": butter,
+#     "sobel": sobel,
+#     "gauss": gauss,
+#     "butter_sobel": butter_sobel,
+#     "butter_gauss": butter_gauss,
+#     "sobel_butter": sobel_butter,
+#     "sobel_gauss": sobel_gauss,
+#     "gauss_sobel": gauss_sobel,
+#     "gauss_butter": gauss_butter,
+#     "butter_sobel_gauss": butter_sobel_gauss,
+#     "butter_gauss_sobel": butter_gauss_sobel,
+#     "sobel_gauss_butter": sobel_gauss_butter,
+#     "sobel_butter_gauss": sobel_butter_gauss,
+#     "gauss_butter_sobel": gauss_butter_sobel,
+#     "gauss_sobel_butter": gauss_sobel_butter,
+# }
+
+
+# In[23]:
+
+
+# for cyto_signal_name, cyto_signal in cytosignals.items():
+#     cell_mask = segment_cells_with_3D_watershed(
+#         cyto_signal=cyto_signal,
+#         nuclei_mask=nuclei_mask_dilated,
+#         masked_region=cyto2_threshold_signal
+#     )
+#     plt.subplot(131)
+#     plt.imshow(nuclei_mask_dilated[8])
+#     plt.axis("off")
+#     plt.title("Nuclei Mask Dilated")
+#     plt.subplot(132)
+#     plt.imshow(cyto_signal[8], cmap="inferno")
+#     plt.title(cyto_signal_name)
+#     plt.axis("off")
+#     plt.subplot(133)
+#     plt.imshow(cell_mask[8], cmap="nipy_spectral")
+#     plt.title("cell mask")
+#     plt.axis("off")
+#     plt.show()
 
 
 # ## Fill holes on a per label basis
 
-# In[14]:
+# In[24]:
 
 
 # # loop through each z-slice and fill holes for each label individually
@@ -461,62 +573,65 @@ for z in range(cyto2.shape[0]):
 
 # ## Cell SAM for cell segmentation
 
-# In[ ]:
+# In[25]:
 
 
-# import imageio.v3 as iio
-# import numpy as np
-# import scipy as sp
-# import matplotlib.pyplot as plt
-# import matplotlib.patches as patches
+import os
 
-# from cellSAM import cellsam_pipeline, get_model
-# from cellSAM.utils import format_image_shape, normalize_image
-# import os
+import imageio.v3 as iio
+import matplotlib.patches as patches
+import matplotlib.pyplot as plt
+import numpy as np
+import scipy as sp
+from cellSAM import cellsam_pipeline, get_model
+from cellSAM.utils import format_image_shape, normalize_image
 
-# # show the access token is set
-# # print("DEEPCELL_ACCESS_TOKEN set:", "DEEPCELL_ACCESS_TOKEN" in os.environ)
-# # print(os.environ["DEEPCELL_ACCESS_TOKEN"])
-# # get_model()
-
-
-# In[ ]:
+# show the access token is set
+# print("DEEPCELL_ACCESS_TOKEN set:", "DEEPCELL_ACCESS_TOKEN" in os.environ)
+# print(os.environ["DEEPCELL_ACCESS_TOKEN"])
+# get_model()
 
 
-# cell_mask = cyto2.copy()*0
-# for z in range(cyto2.shape[0]):
-
-#     cyto2_slice = cyto2[z,:,:].copy()
-#     mask = cellsam_pipeline(
-#         cyto2_slice, use_wsi=False, low_contrast_enhancement=False, gauge_cell_size=False
-#     ).astype(np.uint16)
-#     cell_mask[z,:,:] = mask
-# cell_mask = cell_mask.astype(np.uint16)
-
-# cell_mask,_,_ = skimage.segmentation.relabel_sequential(cell_mask)
-# # plt.imshow(cell_mask[8], cmap="nipy_spectral")
-# # plt.title("Relabeled Masks")
-# # plt.show()
-# if in_notebook:
-#     for z in range(cell_mask.shape[0]):
-#         # Visualize results
-#         plt.figure(figsize=(12, 6))
-#         plt.subplot(131)
-#         plt.imshow(nuclei_mask[z,:,:], cmap='nipy_spectral')
-#         plt.title(f"Nuclei Mask {z}")
-#         plt.axis('off')
-#         plt.subplot(132)
-#         plt.imshow(cyto2[z,:,:], cmap='inferno')
-#         plt.title(f"Cyto2 Slice {z}")
-#         plt.axis('off')
-#         plt.subplot(133)
-#         plt.imshow(cell_mask[z,:,:], cmap='nipy_spectral')
-#         plt.title(f"CellSAM Segmentation Mask {z}")
-#         plt.axis('off')
-#         plt.show()
+# In[26]:
 
 
-# In[17]:
+cell_mask = cyto2.copy() * 0
+for z in range(cyto2.shape[0]):
+    cyto2_slice = cyto2[z, :, :].copy()
+    mask = cellsam_pipeline(
+        cyto2_slice,
+        use_wsi=False,
+        low_contrast_enhancement=False,
+        gauge_cell_size=False,
+    ).astype(np.uint16)
+    cell_mask[z, :, :] = mask
+cell_mask = cell_mask.astype(np.uint16)
+
+cell_mask, _, _ = skimage.segmentation.relabel_sequential(cell_mask)
+# plt.imshow(cell_mask[8], cmap="nipy_spectral")
+# plt.title("Relabeled Masks")
+# plt.show()
+if in_notebook:
+    # for z in range(cell_mask.shape[0]):
+    z = cyto2.shape[0] // 2
+    # Visualize results
+    plt.figure(figsize=(12, 6))
+    plt.subplot(131)
+    plt.imshow(nuclei_mask[z, :, :], cmap="nipy_spectral")
+    plt.title(f"Nuclei Mask {z}")
+    plt.axis("off")
+    plt.subplot(132)
+    plt.imshow(cyto2[z, :, :], cmap="inferno")
+    plt.title(f"Cyto2 Slice {z}")
+    plt.axis("off")
+    plt.subplot(133)
+    plt.imshow(cell_mask[z, :, :], cmap="nipy_spectral")
+    plt.title(f"CellSAM Segmentation Mask {z}")
+    plt.axis("off")
+    plt.show()
+
+
+# In[27]:
 
 
 import segment3D.file_io as uSegment3D_fio
@@ -527,8 +642,6 @@ import segment3D.plotting as uSegment3D_plotting
 import segment3D.segmentation as uSegment3D_segment
 import segment3D.usegment3d as uSegment3D
 import segment3D.watershed as uSegment3D_watershed
-
-# In[18]:
 
 
 def orthogonal_views(
@@ -604,7 +717,7 @@ def orthogonal_views(
     return fig
 
 
-# In[19]:
+# In[28]:
 
 
 from collections import defaultdict
@@ -1097,13 +1210,13 @@ def full_pipeline(
     return segmentation_3d, diagnostics
 
 
-# In[20]:
+# In[29]:
 
 
 # generate the coordinates dataframe for reconstruction
-coordinates_df = generate_coordinates_for_reconstruction(cell_mask)
-# generate distance pairs dataframe
-df = generate_distance_pairs(coordinates_df, x_y_vector_radius_max_constraint=20)
+# coordinates_df = generate_coordinates_for_reconstruction(cell_mask)
+# # generate distance pairs dataframe
+# df = generate_distance_pairs(coordinates_df, x_y_vector_radius_max_constraint=20) # might need to change the radius contraint based on data
 # generate and solve graph to get longest paths
 # longest_paths = solve_graph(graph_creation(df))
 # # collapse labels based on longest paths and reassign labels in nuclei masks
@@ -1117,13 +1230,13 @@ df = generate_distance_pairs(coordinates_df, x_y_vector_radius_max_constraint=20
 # del image, coordinates_df, df, longest_paths
 
 
-# In[21]:
+# In[30]:
 
 
 segmentation_3d, diag = full_pipeline(cell_mask, max_match_distance=100)
 
 
-# In[22]:
+# In[31]:
 
 
 results_dict = {
@@ -1187,7 +1300,7 @@ plt.ylabel("d(Mean Trajectory Length)/d(Distance)")
 plt.show()
 
 
-# In[23]:
+# In[32]:
 
 
 segmentation_3d, diag = full_pipeline(
@@ -1195,181 +1308,345 @@ segmentation_3d, diag = full_pipeline(
 )
 
 
-# In[24]:
+# In[33]:
 
 
-cell_mask_output = pathlib.Path(f"{mask_path}/cell_mask.tiff")
+orthogonal_views(segmentation_3d)
+
+
+# In[34]:
+
+
+cell_mask_output = pathlib.Path(f"{mask_path}/cell_mask_stitched_graph.tiff")
 tifffile.imwrite(cell_mask_output, segmentation_3d)
 
 
-# In[25]:
+# In[35]:
 
 
 segmentation_3d_post_hoc = run_post_hoc_refinement(
     mask_image=segmentation_3d,
     sliding_window_context=3,
 )
-cell_mask_output = pathlib.Path(f"{mask_path}/cell_mask_post_hoc.tiff")
+cell_mask_output = pathlib.Path(f"{mask_path}/cell_mask_stitched_post_hoc.tiff")
 tifffile.imwrite(cell_mask_output, segmentation_3d_post_hoc)
 
 
-# Code pulled from: https://github.com/DanuserLab/u-segment3D/blob/6c64db1fe6aa5e704467ea26b7a61d7fb610996a/tutorials/technical/reconstruct_LateralRootPrimordia_from_2D_slices.py#L4
-
-# In[26]:
-
-
-# """
-# Generate the 2D slice labels.
-# - this transposes the input  volume into xy, xz, yz stacks, then goes slice-by-slice and ensures every ID corresponds to one spatial connected component.
-# """
-# # xy
-# labels_xy = segmentation_3d.copy()
-# labels_xy = uSegment3D_filters.filter_2d_label_slices(labels_xy, bg_label=0, minsize=8)
-
-# # xz
-# labels_xz = segmentation_3d.transpose(1, 0, 2).copy()
-# labels_xz = uSegment3D_filters.filter_2d_label_slices(labels_xz, bg_label=0, minsize=8)
-
-# # zy
-# labels_zy = segmentation_3d.transpose(0, 2, 1).copy()
-# labels_zy = uSegment3D_filters.filter_2d_label_slices(labels_zy, bg_label=0, minsize=8)
-
-# # yz
-# labels_yz = segmentation_3d.transpose(2, 0, 1).copy()
-# labels_yz = uSegment3D_filters.filter_2d_label_slices(labels_yz, bg_label=0, minsize=8)
-# # Get the default parameters.
-# indirect_aggregation_params = uSegment3D_params.get_2D_to_3D_aggregation_params()
-
-# # e.g. using  diffusion skeleton
-# indirect_aggregation_params["indirect_method"]["dtform_method"] = (
-#     "cellpose_skel"  # this will use our exact solver of heat equation. with a fixed central point
-# )
-# # indirect_aggregation_params['indirect_method']['dtform_method'] = 'fmm_skel' # this will use our exact solver of heat equation. with a fixed central point
-# indirect_aggregation_params["indirect_method"]["smooth_skel_sigma"] = (
-#       # 1 or 2 is good ?
-# )
-# indirect_aggregation_params["gradient_descent"]["gradient_decay"] = (
-#     0.25  # we used 0.0 for cellpose_improve in the paper
-# )
-
-# # set the gradient descent parameters
-# indirect_aggregation_params["gradient_descent"]["n_iter"] = 250
-# indirect_aggregation_params["gradient_descent"]["momenta"] = (
-#     0.99  # help boost the splitting
-# )
-
-# # we can visualize the dynamics
-# indirect_aggregation_params["gradient_descent"]["debug_viz"] = False
-# segmentation3D, (probability3D, gradients3D) = (
-#     uSegment3D.aggregate_2D_to_3D_segmentation_indirect_method(
-#         segmentations=[
-#             labels_xy,
-#             labels_xz,
-#             labels_yz,
-#         ],
-#         img_xy_shape=cell_mask.shape,
-#         precomputed_binary=cell_mask > 0,  # we know the foreground
-#         params=indirect_aggregation_params,
-#         savefolder=None,
-#         basename=None,
-#     )
-# )
-# plt.imshow(segmentation3D[8], cmap="nipy_spectral")
-# plt.title("Relabeled Masks")
-# plt.show()
-
-
-# In[ ]:
-
-
-# In[ ]:
-
-
-# In[27]:
-
-
-# # remove small objects
-# segmentation3D = uSegment3D_filters.remove_small_labels(segmentation_3d, min_size=250)
-# plt.imshow(segmentation3D[8], cmap="nipy_spectral")
-# plt.title("Relabeled Masks")
-# plt.show()
-
-
-# ## Match the nuclei labels to the cell labels
-# Essentially the nuclei and cell segmentations are run independently.
-# We then have to match which nucleus belongs to which cell.
-# This is done by looking at the spatial proximity of the centroids of each object in 3D space.
+# ## Save segs
 #
-# We also run into potential issues where a cell might not have a nucleus, or a nucleus might not have a cell.
-# We also might run into issues where there are multiple nuclei in a single cell.
-# This implies that the singel-cell segmentation is not perfect.
-# We will need to perform a post-hoc refinement step to try and clean up these issues.
-# To be able to do this we must first identify the problematic cells/nuclei then refine them.
 
-# In[28]:
+# In[36]:
 
 
-num_of_nuclei = len(np.unique(nuclei_mask)) - 1
-num_of_cells = len(np.unique(segmentation_3d)) - 1
-print(f"Number of nuclei: {num_of_nuclei}")
-print(f"Number of cells: {num_of_cells}")
-
-
-# In[29]:
-
-
-# find a cell per nucleus
-nucleus_centroids = skimage.measure.regionprops_table(
-    nuclei_mask, properties=["label", "centroid"]
+relabeled_cells = np.array(segmentation_3d_post_hoc)
+segmentation_3d_post_hoc = run_post_hoc_refinement(
+    mask_image=relabeled_cells,
+    sliding_window_context=3,
 )
-nucleus_centroids_df = pd.DataFrame(nucleus_centroids)
-
-cell_centroids = skimage.measure.regionprops_table(
-    segmentation_3d, properties=["label", "centroid", "bbox"]
-)
-cell_centroids_df = pd.DataFrame(cell_centroids)
+cell_mask_output = pathlib.Path(f"{mask_path}/cell_mask_post_hoc_post_stitching.tiff")
+tifffile.imwrite(cell_mask_output, segmentation_3d_post_hoc)
 
 
-# In[30]:
+# In[59]:
 
 
-# check pairwide to see if the centroid of a nucleus is within a cell
-nucleus_to_cell_mapping = {}
-for _, nucleus_row in nucleus_centroids_df.iterrows():
-    nucleus_label = nucleus_row["label"]
-    nucleus_centroid = np.array(
-        [
-            nucleus_row["centroid-0"],
-            nucleus_row["centroid-1"],
-            nucleus_row["centroid-2"],
-        ]
+import matplotlib.pyplot as plt
+import numpy as np
+from scipy import ndimage
+from scipy.ndimage import gaussian_filter
+
+
+class ActiveContours3D:
+    """
+    3D Segmentation using Active Contours (Snake) method.
+    Complete, working implementation with all required methods.
+    """
+
+    def __init__(
+        self,
+        image_3d,
+        iterations=100,
+        alpha=0.01,
+        beta=0.05,
+        gamma=0.05,
+        voxel_spacing=None,
+        initial_slices=None,
+    ):
+        """Initialize the 3D Active Contours segmentation."""
+        self.image_3d = image_3d.astype(np.float32)
+        self.iterations = iterations
+        self.alpha = alpha
+        self.beta = beta
+        self.gamma = gamma
+        self.voxel_spacing = (
+            np.array(voxel_spacing) if voxel_spacing else np.array([1.0, 1.0, 1.0])
+        )
+        self.initial_slices = initial_slices
+        self.is_anisotropic = not np.allclose(self.voxel_spacing, self.voxel_spacing[0])
+
+        self.background_intensity = None
+        self.initial_mask = None
+        self.final_mask = None
+
+    def calculate_background_threshold(self):
+        """Calculate threshold as: mean(background) + 1*std(background)"""
+        flat_image = self.image_3d.flatten()
+        background_percentile = np.percentile(flat_image, 15)
+        background_pixels = flat_image[flat_image < background_percentile]
+
+        background_mean = np.mean(background_pixels)
+        background_std = np.std(background_pixels)
+        threshold = background_mean + background_std
+
+        self.background_intensity = threshold
+        return threshold
+
+    def generate_initial_mask(self):
+        """Generate initial binary mask using threshold-based segmentation."""
+        threshold = self.calculate_background_threshold()
+
+        # Create binary mask
+        initial_mask = (self.image_3d > threshold).astype(np.uint8)
+
+        # Apply morphological operations
+        initial_mask = ndimage.binary_dilation(initial_mask, iterations=2).astype(
+            np.uint8
+        )
+        initial_mask = ndimage.binary_erosion(initial_mask, iterations=1).astype(
+            np.uint8
+        )
+
+        self.initial_mask = initial_mask
+        return initial_mask
+
+    def generate_initial_mask_from_slices(self):
+        """Generate 3D initial mask from a stack of 2D slice segmentations."""
+        if self.initial_slices is None:
+            raise ValueError("initial_slices must be provided")
+
+        num_slices = len(self.initial_slices)
+        expected_slices = self.image_3d.shape[0]
+
+        if num_slices != expected_slices:
+            raise ValueError(f"Expected {expected_slices} slices, got {num_slices}")
+
+        mask_3d = np.zeros_like(self.image_3d, dtype=np.uint8)
+
+        for z, slice_mask in enumerate(self.initial_slices):
+            mask_3d[z] = (slice_mask > 0).astype(np.uint8)
+
+        # Smooth between slices
+        mask_3d = ndimage.binary_dilation(mask_3d, iterations=1).astype(np.uint8)
+        mask_3d = ndimage.binary_erosion(mask_3d, iterations=1).astype(np.uint8)
+
+        self.initial_mask = mask_3d
+        return mask_3d
+
+    def compute_edge_map(self):
+        """Compute edge map for guiding active contours."""
+        # Compute gradient magnitude accounting for voxel spacing
+        gradient_z = ndimage.sobel(self.image_3d, axis=0) / self.voxel_spacing[0]
+        gradient_y = ndimage.sobel(self.image_3d, axis=1) / self.voxel_spacing[1]
+        gradient_x = ndimage.sobel(self.image_3d, axis=2) / self.voxel_spacing[2]
+
+        gradient_magnitude = np.sqrt(gradient_x**2 + gradient_y**2 + gradient_z**2)
+
+        # Normalize gradient
+        gradient_magnitude = (gradient_magnitude - gradient_magnitude.min()) / (
+            gradient_magnitude.max() - gradient_magnitude.min() + 1e-8
+        )
+
+        # Edge map: inverse of gradient
+        edge_map = 1 - gradient_magnitude
+
+        if self.is_anisotropic:
+            print(f"  Anisotropic voxel spacing detected: {self.voxel_spacing}")
+
+        return edge_map
+
+    def evolve_contour(self, mask, edge_map, intensity_map=None):
+        """Evolve the contour using active contours method."""
+        binary_mask = mask > 0.5
+
+        # Compute signed distance function
+        if self.is_anisotropic:
+            dist_pos = ndimage.distance_transform_edt(
+                binary_mask, sampling=self.voxel_spacing
+            )
+            dist_neg = ndimage.distance_transform_edt(
+                ~binary_mask, sampling=self.voxel_spacing
+            )
+        else:
+            dist_pos = ndimage.distance_transform_edt(binary_mask)
+            dist_neg = ndimage.distance_transform_edt(~binary_mask)
+
+        distance_map = dist_pos - dist_neg
+
+        # Curvature term
+        curvature = gaussian_filter(distance_map, sigma=0.5)
+
+        # Edge term
+        smooth_edge = gaussian_filter(edge_map, sigma=0.3)
+
+        # Intensity gradient term: prevent merging
+        if intensity_map is not None:
+            intensity_grad = np.gradient(intensity_map)
+            intensity_grad = np.sqrt(np.sum([g**2 for g in intensity_grad], axis=0))
+            intensity_grad = (intensity_grad - intensity_grad.min()) / (
+                intensity_grad.max() - intensity_grad.min() + 1e-8
+            )
+            anti_merge_term = intensity_grad
+        else:
+            anti_merge_term = 0
+
+        # Update term
+        update = self.gamma * (
+            self.alpha * smooth_edge - self.beta * curvature - 0.5 * anti_merge_term
+        )
+
+        # Update level set with damping
+        new_mask = distance_map + 0.1 * update
+
+        # Convert back to binary
+        updated_mask = (new_mask > 0).astype(np.float32)
+
+        return updated_mask
+
+    def segment(self):
+        """Perform 3D active contours segmentation."""
+        print("Starting 3D Active Contours Segmentation...")
+
+        # Step 1: Generate initial mask
+        print("\nStep 1: Generating initial mask...")
+        if self.initial_slices is not None:
+            print("  Using 2D slice-based initialization")
+            mask = self.generate_initial_mask_from_slices()
+        else:
+            print("  Using threshold-based initialization")
+            mask = self.generate_initial_mask()
+
+        print(f"  Initial mask: {np.sum(mask)} voxels")
+
+        # Step 2: Compute edge map
+        print("\nStep 2: Computing edge map...")
+        edge_map = self.compute_edge_map()
+
+        # Normalize intensity
+        intensity_map = (self.image_3d.astype(np.float32) - self.image_3d.min()) / (
+            self.image_3d.max() - self.image_3d.min() + 1e-8
+        )
+
+        # Step 3: Evolve contour
+        print(f"\nStep 3: Evolving contours ({self.iterations} iterations)...")
+        for iteration in range(self.iterations):
+            mask = self.evolve_contour(mask, edge_map, intensity_map)
+
+            if (iteration + 1) % 20 == 0:
+                print(f"  Iteration {iteration + 1}/{self.iterations}")
+
+        # Final binary mask
+        self.final_mask = (mask > 0.5).astype(np.uint8)
+        print(f"\nSegmentation complete!")
+        print(f"  Final mask: {np.sum(self.final_mask)} voxels")
+
+        return self.final_mask
+
+    def post_process_mask(
+        self, remove_small_objects=True, min_size=50, separate_objects=True
+    ):
+        """Post-process the final mask."""
+        if self.final_mask is None:
+            raise ValueError("Run segment() first")
+
+        result_mask = self.final_mask.copy()
+
+        # Remove small objects
+        if remove_small_objects:
+            labeled_mask, num_features = ndimage.label(result_mask)
+
+            for i in range(1, num_features + 1):
+                if np.sum(labeled_mask == i) < min_size:
+                    result_mask[labeled_mask == i] = 0
+
+            print(f"\nPost-processing: Removed objects smaller than {min_size} voxels")
+
+        # Use watershed to separate merged objects
+        if separate_objects:
+            from scipy.ndimage import watershed
+
+            print("  Using watershed to separate merged objects...")
+
+            # Distance transform
+            distance = ndimage.distance_transform_edt(result_mask)
+
+            # Find local maxima
+            struct = ndimage.generate_binary_structure(3, 2)
+            local_maxima = (
+                ndimage.maximum_filter(distance, footprint=struct) == distance
+            )
+
+            # Create markers
+            markers = ndimage.label(local_maxima)[0]
+
+            # Intensity for watershed
+            intensity_inverted = 1.0 - (
+                self.image_3d.astype(np.float32) - self.image_3d.min()
+            ) / (self.image_3d.max() - self.image_3d.min() + 1e-8)
+
+            # Apply watershed
+            segmented = watershed(intensity_inverted, markers=markers, mask=result_mask)
+            result_mask = (segmented > 0).astype(np.uint8)
+
+        return result_mask
+
+
+def visualize_segmentation(image_3d, initial_mask, final_mask, slice_idx=None):
+    """Visualize segmentation results."""
+    if slice_idx is None:
+        slice_idx = image_3d.shape[0] // 2
+
+    fig, axes = plt.subplots(2, 2, figsize=(14, 10))
+
+    axes[0, 0].imshow(image_3d[slice_idx], cmap="gray")
+    axes[0, 0].set_title("Original Image")
+    axes[0, 0].axis("off")
+
+    axes[0, 1].imshow(initial_mask[slice_idx], cmap="gray")
+    axes[0, 1].set_title("Initial Mask")
+    axes[0, 1].axis("off")
+
+    axes[1, 0].imshow(final_mask[slice_idx], cmap="gray")
+    axes[1, 0].set_title("Final Mask (Active Contours)")
+    axes[1, 0].axis("off")
+
+    overlay = np.stack(
+        [image_3d[slice_idx], image_3d[slice_idx], image_3d[slice_idx]], axis=-1
     )
-    for _, cell_row in cell_centroids_df.iterrows():
-        cell_label = cell_row["label"]
-        cell_bbox = cell_row[
-            ["bbox-0", "bbox-1", "bbox-2", "bbox-3", "bbox-4", "bbox-5"]
-        ].values
-        # check if nucleus centroid is within cell bbox
-        if (
-            nucleus_centroid[0] >= cell_bbox[0]
-            and nucleus_centroid[0] <= cell_bbox[3]
-            and nucleus_centroid[1] >= cell_bbox[1]
-            and nucleus_centroid[1] <= cell_bbox[4]
-            and nucleus_centroid[2] >= cell_bbox[2]
-            and nucleus_centroid[2] <= cell_bbox[5]
-        ):
-            nucleus_to_cell_mapping[nucleus_label] = cell_label
-            break
-nucleus_to_cell_mapping
+    overlay[:, :, 0] = np.maximum(overlay[:, :, 0], final_mask[slice_idx] * 200)
+    axes[1, 1].imshow(overlay.astype(np.uint8))
+    axes[1, 1].set_title("Segmentation Overlay")
+    axes[1, 1].axis("off")
 
-
-# In[31]:
-
-
-cell_centroids_df
+    plt.tight_layout()
+    plt.show()
 
 
 # In[ ]:
+
+
+image_3d = cell_mask.copy()
+
+segmentation = ActiveContours3D(
+    image_3d,
+    iterations=100,
+    alpha=0.01,
+    beta=0.05,  # Lower to prevent merging
+    gamma=0.05,
+    voxel_spacing=(0.5, 0.1, 0.1),
+)
+
+mask = segmentation.segment()
+mask = segmentation.post_process_mask(separate_objects=True)
 
 
 # In[ ]:
@@ -1378,7 +1655,7 @@ cell_centroids_df
 # ## run the mask reassignment function (post-hoc)
 # ### This needs to occur after both nuclei and cell segmentations are done
 
-# In[ ]:
+# In[37]:
 
 
 # cell_df = get_labels_for_post_hoc_reassignment(
@@ -1389,7 +1666,7 @@ cell_centroids_df
 # )
 
 
-# In[ ]:
+# In[38]:
 
 
 # nuclei_mask, reassigned_nuclei_df = run_post_hoc_mask_reassignment(
@@ -1403,7 +1680,7 @@ cell_centroids_df
 
 # ## Cytoplasm Segmentation
 
-# In[ ]:
+# In[39]:
 
 
 # cytoplasm_mask = create_cytoplasm_masks(
@@ -1414,7 +1691,7 @@ cell_centroids_df
 
 # ## Organoid segmentation (derived from cell segmentation)
 
-# In[ ]:
+# In[40]:
 
 
 # # convert the cell masks to binary masks
@@ -1431,7 +1708,7 @@ cell_centroids_df
 
 # ## Save the segmented masks
 
-# In[ ]:
+# In[41]:
 
 
 # nuclei_mask_output = pathlib.Path(f"{mask_path}/nuclei_mask.tiff")
@@ -1444,7 +1721,7 @@ tifffile.imwrite(cell_mask_output, cell_mask)
 # # tifffile.imwrite(organoid_mask_output, organoid_mask)
 
 
-# In[ ]:
+# In[42]:
 
 
 # end_mem = psutil.Process(os.getpid()).memory_info().rss / 1024**2
@@ -1457,6 +1734,3 @@ tifffile.imwrite(cell_mask_output, cell_mask)
 #     --- %s minutes --- % {((end_time - start_time) / 60)}\n
 #     --- %s hours --- % {((end_time - start_time) / 3600)}
 # """)
-
-
-# In[ ]:

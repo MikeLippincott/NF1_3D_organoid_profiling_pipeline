@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
+# In[1]:
 
 
+import argparse
 import os
 import pathlib
+import sys
 
 import duckdb
 import pandas as pd
@@ -50,7 +52,7 @@ levels_to_merge_dict = {
 
 for patient in patients:
     norm_path = pathlib.Path(
-        f"{profile_base_dir}/data/{patient}/image_based_profiles/3.normalized_profiles"
+        f"{profile_base_dir}/data/{patient}/image_based_profiles/4.normalized_profiles"
     )
     for file in norm_path.glob("*.parquet"):
         if "sc" in file.name:
@@ -59,7 +61,7 @@ for patient in patients:
             levels_to_merge_dict["organoid"].append(file)
 
 
-# In[ ]:
+# In[5]:
 
 
 feature_select_ops = [
@@ -69,19 +71,9 @@ feature_select_ops = [
     # "correlation_threshold", # comment out to remove correlation thresholding
 ]
 metadata_cols = [
-    "Metadata_patient_tumor",
-    "Metadata_patient",
-    "Metadata_tumor",
-    "Metadata_object_id",
-    "Metadata_unit",
-    "Metadata_dose",
-    "Metadata_treatment",
-    "Metadata_Target",
-    "Metadata_Class",
-    "Metadata_Therapeutic_Categories",
-    "Metadata_image_set",
-    "Metadata_Well",
-    "Metadata_parent_organoid",
+    x
+    for x in pd.read_parquet(levels_to_merge_dict["sc"][0]).columns
+    if "Metadata_" in x
 ]
 na_cutoff = 0.05
 corr_threshold = 0.9
@@ -113,15 +105,13 @@ for compartment, files in levels_to_merge_dict.items():
         )
         metadata_cols = [
             "Metadata_patient_tumor",
-            "Metadata_patient",
-            "Metadata_tumor",
             "Metadata_object_id",
-            "Metadata_unit",
+            "Metadata_dose_unit",
             "Metadata_dose",
             "Metadata_treatment",
-            "Metadata_Target",
-            "Metadata_Class",
-            "Metadata_Therapeutic_Categories",
+            "Metadata_target",
+            "Metadata_class",
+            "Metadata_therapeutic_categories",
             "Metadata_image_set",
             "Metadata_Well",
             "Metadata_parent_organoid",
@@ -170,15 +160,13 @@ for compartment, files in levels_to_merge_dict.items():
             population_df=fs_profiles,
             strata=[
                 "Metadata_patient_tumor",
-                "Metadata_patient",
-                "Metadata_tumor",
                 "Metadata_Well",
                 "Metadata_treatment",
                 "Metadata_dose",
-                "Metadata_unit",
-                "Metadata_Target",
-                "Metadata_Class",
-                "Metadata_Therapeutic_Categories",
+                "Metadata_dose_unit",
+                "Metadata_target",
+                "Metadata_class",
+                "Metadata_therapeutic_categories",
             ],
             features=feature_columns,
             operation="median",
@@ -192,14 +180,12 @@ for compartment, files in levels_to_merge_dict.items():
             population_df=fs_profiles,
             strata=[
                 "Metadata_patient_tumor",
-                "Metadata_patient",
-                "Metadata_tumor",
                 "Metadata_treatment",
                 "Metadata_dose",
-                "Metadata_unit",
-                "Metadata_Target",
-                "Metadata_Class",
-                "Metadata_Therapeutic_Categories",
+                "Metadata_dose_unit",
+                "Metadata_target",
+                "Metadata_class",
+                "Metadata_therapeutic_categories",
             ],
             features=feature_columns,
             operation="median",
@@ -217,15 +203,13 @@ for compartment, files in levels_to_merge_dict.items():
         )
         metadata_cols = [
             "Metadata_patient_tumor",
-            "Metadata_patient",
-            "Metadata_tumor",
             "Metadata_object_id",
-            "Metadata_unit",
+            "Metadata_dose_unit",
             "Metadata_dose",
             "Metadata_treatment",
-            "Metadata_Target",
-            "Metadata_Class",
-            "Metadata_Therapeutic_Categories",
+            "Metadata_target",
+            "Metadata_class",
+            "Metadata_therapeutic_categories",
             "Metadata_image_set",
             "Metadata_Well",
             "Metadata_single_cell_count",
@@ -271,15 +255,13 @@ for compartment, files in levels_to_merge_dict.items():
             population_df=fs_profiles,
             strata=[
                 "Metadata_patient_tumor",
-                "Metadata_patient",
-                "Metadata_tumor",
                 "Metadata_Well",
                 "Metadata_treatment",
                 "Metadata_dose",
-                "Metadata_unit",
-                "Metadata_Target",
-                "Metadata_Class",
-                "Metadata_Therapeutic_Categories",
+                "Metadata_dose_unit",
+                "Metadata_target",
+                "Metadata_class",
+                "Metadata_therapeutic_categories",
             ],
             features=feature_columns,
             operation="median",
@@ -293,15 +275,13 @@ for compartment, files in levels_to_merge_dict.items():
             population_df=fs_profiles,
             strata=[
                 "Metadata_patient_tumor",
-                "Metadata_patient",
-                "Metadata_tumor",
                 "Metadata_Well",
                 "Metadata_treatment",
                 "Metadata_dose",
-                "Metadata_unit",
-                "Metadata_Target",
-                "Metadata_Class",
-                "Metadata_Therapeutic_Categories",
+                "Metadata_dose_unit",
+                "Metadata_target",
+                "Metadata_class",
+                "Metadata_therapeutic_categories",
             ],
             features=feature_columns,
             operation="median",

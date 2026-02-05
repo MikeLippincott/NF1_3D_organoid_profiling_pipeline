@@ -24,13 +24,12 @@ if in_notebook:
 else:
     from tqdm import tqdm
 
-from featurization_parsable_arguments import parse_featurization_args
 
 # In[ ]:
 
 
 if not in_notebook:
-    arguments_dict = parse_featurization_args()
+    arguments_dict = parse_args()
     patient = arguments_dict["patient"]
     well_fov = arguments_dict["well_fov"]
 

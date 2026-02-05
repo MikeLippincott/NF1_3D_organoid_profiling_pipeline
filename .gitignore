@@ -201,3 +201,4 @@ models/*
 2.segment_images/figures/platemaps/*
 docs/doctrees/*
 docs/html/*
+3.cellprofiling/logs/*

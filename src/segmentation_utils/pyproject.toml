@@ -29,6 +29,7 @@ py-modules = [
     "organoid_segmentation",
     "nuclei_segmentation",
     "segmentation_decoupling",
+    "cell_segmentation",
 ]
 
 [tool.setuptools.packages.find]

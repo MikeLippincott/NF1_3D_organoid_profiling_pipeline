@@ -9,7 +9,7 @@
 #
 # No we are at ~8 minutes!
 
-# In[1]:
+# In[ ]:
 
 
 import argparse
@@ -35,7 +35,7 @@ from notebook_init_utils import bandicoot_check, init_notebook
 from organoid_segmentation import *
 from segmentation_decoupling import *
 
-# In[2]:
+# In[ ]:
 
 
 start_time = time.time()
@@ -43,7 +43,7 @@ start_time = time.time()
 start_mem = psutil.Process(os.getpid()).memory_info().rss / 1024**2
 
 
-# In[3]:
+# In[ ]:
 
 
 root_dir, in_notebook = init_notebook()
@@ -53,7 +53,7 @@ image_base_dir = bandicoot_check(
 )
 
 
-# In[4]:
+# In[ ]:
 
 
 if not in_notebook:
@@ -89,7 +89,7 @@ mask_path = pathlib.Path(
 mask_path.mkdir(exist_ok=True, parents=True)
 
 
-# In[5]:
+# In[ ]:
 
 
 # look up the morphology of the organoid from json file
@@ -104,7 +104,7 @@ mask_path.mkdir(exist_ok=True, parents=True)
 morphology = "globular"
 
 
-# In[6]:
+# In[ ]:
 
 
 return_dict = read_in_channels(
@@ -134,7 +134,7 @@ del cyto2_raw
 # This is done in a separate notebook `1a.organoid_segmentation_derived_from_cell.ipynb`.
 # This code is effectively deprecated.
 
-# In[7]:
+# In[ ]:
 
 
 # cyto2_image_shape = cyto2.shape
@@ -175,7 +175,7 @@ del cyto2_raw
 # del filtered_cyto2
 
 
-# In[8]:
+# In[ ]:
 
 
 # organoid_masks = np.array(
@@ -193,7 +193,7 @@ del cyto2_raw
 # )
 
 
-# In[9]:
+# In[ ]:
 
 
 # # generate the coordinates dataframe for reconstruction
@@ -215,7 +215,7 @@ del cyto2_raw
 
 # ## Segment the cells
 
-# In[10]:
+# In[ ]:
 
 
 def segment_cells_with_3D_watershed(
@@ -252,13 +252,13 @@ def segment_cells_with_3D_watershed(
     return labels
 
 
-# In[11]:
+# In[ ]:
 
 
 cmap_option = "magma"
 
 
-# In[12]:
+# In[ ]:
 
 
 # elevation_map_1 = skimage.filters.butterworth(
@@ -301,7 +301,7 @@ cmap_option = "magma"
 # In[ ]:
 
 
-# In[13]:
+# In[ ]:
 
 
 # sampling=[1, 0.1, 0.1]
@@ -329,7 +329,7 @@ cmap_option = "magma"
 # plt.show()
 
 
-# In[14]:
+# In[ ]:
 
 
 # import skimage.transform as skt
@@ -353,7 +353,7 @@ cmap_option = "magma"
 # mask_iso = resample_isotropic(masked_region, spacing, order=0)   # labels -> order=0
 
 
-# In[15]:
+# In[ ]:
 
 
 # labels = skimage.segmentation.watershed(
@@ -380,14 +380,14 @@ cmap_option = "magma"
 # plt.show()
 
 
-# In[16]:
+# In[ ]:
 
 
 # print(len(np.unique(nuclei_mask)))
 # print(len(np.unique(labels)))
 
 
-# In[17]:
+# In[ ]:
 
 
 # save_path = pathlib.Path(f"{mask_path}/cell_mask_new_watershed.tiff")
@@ -397,13 +397,13 @@ cmap_option = "magma"
 # In[ ]:
 
 
-# In[18]:
+# In[ ]:
 
 
 # labels = sequential_labeling(labels)
 
 
-# In[19]:
+# In[ ]:
 
 
 # cell_df = get_labels_for_post_hoc_reassignment(
@@ -421,7 +421,7 @@ cmap_option = "magma"
 # )
 
 
-# In[20]:
+# In[ ]:
 
 
 # labels = np.array(labels)
@@ -436,7 +436,7 @@ cmap_option = "magma"
 # In[ ]:
 
 
-# In[21]:
+# In[ ]:
 
 
 # # butter
@@ -471,7 +471,7 @@ cmap_option = "magma"
 # gauss_sobel_butter = skimage.filters.gaussian(sobel_butter)
 
 
-# In[22]:
+# In[ ]:
 
 
 # cytosignals = {
@@ -493,7 +493,7 @@ cmap_option = "magma"
 # }
 
 
-# In[23]:
+# In[ ]:
 
 
 # for cyto_signal_name, cyto_signal in cytosignals.items():
@@ -519,7 +519,7 @@ cmap_option = "magma"
 
 # ## Fill holes on a per label basis
 
-# In[24]:
+# In[ ]:
 
 
 # # loop through each z-slice and fill holes for each label individually
@@ -573,7 +573,7 @@ cmap_option = "magma"
 
 # ## Cell SAM for cell segmentation
 
-# In[25]:
+# In[ ]:
 
 
 import os
@@ -592,7 +592,7 @@ from cellSAM.utils import format_image_shape, normalize_image
 # get_model()
 
 
-# In[26]:
+# In[ ]:
 
 
 cell_mask = cyto2.copy() * 0
@@ -631,7 +631,7 @@ if in_notebook:
     plt.show()
 
 
-# In[27]:
+# In[ ]:
 
 
 import segment3D.file_io as uSegment3D_fio
@@ -717,7 +717,7 @@ def orthogonal_views(
     return fig
 
 
-# In[28]:
+# In[ ]:
 
 
 from collections import defaultdict
@@ -1210,7 +1210,7 @@ def full_pipeline(
     return segmentation_3d, diagnostics
 
 
-# In[29]:
+# In[ ]:
 
 
 # generate the coordinates dataframe for reconstruction
@@ -1230,13 +1230,13 @@ def full_pipeline(
 # del image, coordinates_df, df, longest_paths
 
 
-# In[30]:
+# In[ ]:
 
 
 segmentation_3d, diag = full_pipeline(cell_mask, max_match_distance=100)
 
 
-# In[31]:
+# In[ ]:
 
 
 results_dict = {
@@ -1300,7 +1300,7 @@ plt.ylabel("d(Mean Trajectory Length)/d(Distance)")
 plt.show()
 
 
-# In[32]:
+# In[ ]:
 
 
 segmentation_3d, diag = full_pipeline(
@@ -1308,20 +1308,20 @@ segmentation_3d, diag = full_pipeline(
 )
 
 
-# In[33]:
+# In[ ]:
 
 
 orthogonal_views(segmentation_3d)
 
 
-# In[34]:
+# In[ ]:
 
 
 cell_mask_output = pathlib.Path(f"{mask_path}/cell_mask_stitched_graph.tiff")
 tifffile.imwrite(cell_mask_output, segmentation_3d)
 
 
-# In[35]:
+# In[ ]:
 
 
 segmentation_3d_post_hoc = run_post_hoc_refinement(
@@ -1335,7 +1335,7 @@ tifffile.imwrite(cell_mask_output, segmentation_3d_post_hoc)
 # ## Save segs
 #
 
-# In[36]:
+# In[ ]:
 
 
 relabeled_cells = np.array(segmentation_3d_post_hoc)
@@ -1347,306 +1347,7 @@ cell_mask_output = pathlib.Path(f"{mask_path}/cell_mask_post_hoc_post_stitching.
 tifffile.imwrite(cell_mask_output, segmentation_3d_post_hoc)
 
 
-# In[59]:
-
-
-import matplotlib.pyplot as plt
-import numpy as np
-from scipy import ndimage
-from scipy.ndimage import gaussian_filter
-
-
-class ActiveContours3D:
-    """
-    3D Segmentation using Active Contours (Snake) method.
-    Complete, working implementation with all required methods.
-    """
-
-    def __init__(
-        self,
-        image_3d,
-        iterations=100,
-        alpha=0.01,
-        beta=0.05,
-        gamma=0.05,
-        voxel_spacing=None,
-        initial_slices=None,
-    ):
-        """Initialize the 3D Active Contours segmentation."""
-        self.image_3d = image_3d.astype(np.float32)
-        self.iterations = iterations
-        self.alpha = alpha
-        self.beta = beta
-        self.gamma = gamma
-        self.voxel_spacing = (
-            np.array(voxel_spacing) if voxel_spacing else np.array([1.0, 1.0, 1.0])
-        )
-        self.initial_slices = initial_slices
-        self.is_anisotropic = not np.allclose(self.voxel_spacing, self.voxel_spacing[0])
-
-        self.background_intensity = None
-        self.initial_mask = None
-        self.final_mask = None
-
-    def calculate_background_threshold(self):
-        """Calculate threshold as: mean(background) + 1*std(background)"""
-        flat_image = self.image_3d.flatten()
-        background_percentile = np.percentile(flat_image, 15)
-        background_pixels = flat_image[flat_image < background_percentile]
-
-        background_mean = np.mean(background_pixels)
-        background_std = np.std(background_pixels)
-        threshold = background_mean + background_std
-
-        self.background_intensity = threshold
-        return threshold
-
-    def generate_initial_mask(self):
-        """Generate initial binary mask using threshold-based segmentation."""
-        threshold = self.calculate_background_threshold()
-
-        # Create binary mask
-        initial_mask = (self.image_3d > threshold).astype(np.uint8)
-
-        # Apply morphological operations
-        initial_mask = ndimage.binary_dilation(initial_mask, iterations=2).astype(
-            np.uint8
-        )
-        initial_mask = ndimage.binary_erosion(initial_mask, iterations=1).astype(
-            np.uint8
-        )
-
-        self.initial_mask = initial_mask
-        return initial_mask
-
-    def generate_initial_mask_from_slices(self):
-        """Generate 3D initial mask from a stack of 2D slice segmentations."""
-        if self.initial_slices is None:
-            raise ValueError("initial_slices must be provided")
-
-        num_slices = len(self.initial_slices)
-        expected_slices = self.image_3d.shape[0]
-
-        if num_slices != expected_slices:
-            raise ValueError(f"Expected {expected_slices} slices, got {num_slices}")
-
-        mask_3d = np.zeros_like(self.image_3d, dtype=np.uint8)
-
-        for z, slice_mask in enumerate(self.initial_slices):
-            mask_3d[z] = (slice_mask > 0).astype(np.uint8)
-
-        # Smooth between slices
-        mask_3d = ndimage.binary_dilation(mask_3d, iterations=1).astype(np.uint8)
-        mask_3d = ndimage.binary_erosion(mask_3d, iterations=1).astype(np.uint8)
-
-        self.initial_mask = mask_3d
-        return mask_3d
-
-    def compute_edge_map(self):
-        """Compute edge map for guiding active contours."""
-        # Compute gradient magnitude accounting for voxel spacing
-        gradient_z = ndimage.sobel(self.image_3d, axis=0) / self.voxel_spacing[0]
-        gradient_y = ndimage.sobel(self.image_3d, axis=1) / self.voxel_spacing[1]
-        gradient_x = ndimage.sobel(self.image_3d, axis=2) / self.voxel_spacing[2]
-
-        gradient_magnitude = np.sqrt(gradient_x**2 + gradient_y**2 + gradient_z**2)
-
-        # Normalize gradient
-        gradient_magnitude = (gradient_magnitude - gradient_magnitude.min()) / (
-            gradient_magnitude.max() - gradient_magnitude.min() + 1e-8
-        )
-
-        # Edge map: inverse of gradient
-        edge_map = 1 - gradient_magnitude
-
-        if self.is_anisotropic:
-            print(f"  Anisotropic voxel spacing detected: {self.voxel_spacing}")
-
-        return edge_map
-
-    def evolve_contour(self, mask, edge_map, intensity_map=None):
-        """Evolve the contour using active contours method."""
-        binary_mask = mask > 0.5
-
-        # Compute signed distance function
-        if self.is_anisotropic:
-            dist_pos = ndimage.distance_transform_edt(
-                binary_mask, sampling=self.voxel_spacing
-            )
-            dist_neg = ndimage.distance_transform_edt(
-                ~binary_mask, sampling=self.voxel_spacing
-            )
-        else:
-            dist_pos = ndimage.distance_transform_edt(binary_mask)
-            dist_neg = ndimage.distance_transform_edt(~binary_mask)
-
-        distance_map = dist_pos - dist_neg
-
-        # Curvature term
-        curvature = gaussian_filter(distance_map, sigma=0.5)
-
-        # Edge term
-        smooth_edge = gaussian_filter(edge_map, sigma=0.3)
-
-        # Intensity gradient term: prevent merging
-        if intensity_map is not None:
-            intensity_grad = np.gradient(intensity_map)
-            intensity_grad = np.sqrt(np.sum([g**2 for g in intensity_grad], axis=0))
-            intensity_grad = (intensity_grad - intensity_grad.min()) / (
-                intensity_grad.max() - intensity_grad.min() + 1e-8
-            )
-            anti_merge_term = intensity_grad
-        else:
-            anti_merge_term = 0
-
-        # Update term
-        update = self.gamma * (
-            self.alpha * smooth_edge - self.beta * curvature - 0.5 * anti_merge_term
-        )
-
-        # Update level set with damping
-        new_mask = distance_map + 0.1 * update
-
-        # Convert back to binary
-        updated_mask = (new_mask > 0).astype(np.float32)
-
-        return updated_mask
-
-    def segment(self):
-        """Perform 3D active contours segmentation."""
-        print("Starting 3D Active Contours Segmentation...")
-
-        # Step 1: Generate initial mask
-        print("\nStep 1: Generating initial mask...")
-        if self.initial_slices is not None:
-            print("  Using 2D slice-based initialization")
-            mask = self.generate_initial_mask_from_slices()
-        else:
-            print("  Using threshold-based initialization")
-            mask = self.generate_initial_mask()
-
-        print(f"  Initial mask: {np.sum(mask)} voxels")
-
-        # Step 2: Compute edge map
-        print("\nStep 2: Computing edge map...")
-        edge_map = self.compute_edge_map()
-
-        # Normalize intensity
-        intensity_map = (self.image_3d.astype(np.float32) - self.image_3d.min()) / (
-            self.image_3d.max() - self.image_3d.min() + 1e-8
-        )
-
-        # Step 3: Evolve contour
-        print(f"\nStep 3: Evolving contours ({self.iterations} iterations)...")
-        for iteration in range(self.iterations):
-            mask = self.evolve_contour(mask, edge_map, intensity_map)
-
-            if (iteration + 1) % 20 == 0:
-                print(f"  Iteration {iteration + 1}/{self.iterations}")
-
-        # Final binary mask
-        self.final_mask = (mask > 0.5).astype(np.uint8)
-        print(f"\nSegmentation complete!")
-        print(f"  Final mask: {np.sum(self.final_mask)} voxels")
-
-        return self.final_mask
-
-    def post_process_mask(
-        self, remove_small_objects=True, min_size=50, separate_objects=True
-    ):
-        """Post-process the final mask."""
-        if self.final_mask is None:
-            raise ValueError("Run segment() first")
-
-        result_mask = self.final_mask.copy()
-
-        # Remove small objects
-        if remove_small_objects:
-            labeled_mask, num_features = ndimage.label(result_mask)
-
-            for i in range(1, num_features + 1):
-                if np.sum(labeled_mask == i) < min_size:
-                    result_mask[labeled_mask == i] = 0
-
-            print(f"\nPost-processing: Removed objects smaller than {min_size} voxels")
-
-        # Use watershed to separate merged objects
-        if separate_objects:
-            from scipy.ndimage import watershed
-
-            print("  Using watershed to separate merged objects...")
-
-            # Distance transform
-            distance = ndimage.distance_transform_edt(result_mask)
-
-            # Find local maxima
-            struct = ndimage.generate_binary_structure(3, 2)
-            local_maxima = (
-                ndimage.maximum_filter(distance, footprint=struct) == distance
-            )
-
-            # Create markers
-            markers = ndimage.label(local_maxima)[0]
-
-            # Intensity for watershed
-            intensity_inverted = 1.0 - (
-                self.image_3d.astype(np.float32) - self.image_3d.min()
-            ) / (self.image_3d.max() - self.image_3d.min() + 1e-8)
-
-            # Apply watershed
-            segmented = watershed(intensity_inverted, markers=markers, mask=result_mask)
-            result_mask = (segmented > 0).astype(np.uint8)
-
-        return result_mask
-
-
-def visualize_segmentation(image_3d, initial_mask, final_mask, slice_idx=None):
-    """Visualize segmentation results."""
-    if slice_idx is None:
-        slice_idx = image_3d.shape[0] // 2
-
-    fig, axes = plt.subplots(2, 2, figsize=(14, 10))
-
-    axes[0, 0].imshow(image_3d[slice_idx], cmap="gray")
-    axes[0, 0].set_title("Original Image")
-    axes[0, 0].axis("off")
-
-    axes[0, 1].imshow(initial_mask[slice_idx], cmap="gray")
-    axes[0, 1].set_title("Initial Mask")
-    axes[0, 1].axis("off")
-
-    axes[1, 0].imshow(final_mask[slice_idx], cmap="gray")
-    axes[1, 0].set_title("Final Mask (Active Contours)")
-    axes[1, 0].axis("off")
-
-    overlay = np.stack(
-        [image_3d[slice_idx], image_3d[slice_idx], image_3d[slice_idx]], axis=-1
-    )
-    overlay[:, :, 0] = np.maximum(overlay[:, :, 0], final_mask[slice_idx] * 200)
-    axes[1, 1].imshow(overlay.astype(np.uint8))
-    axes[1, 1].set_title("Segmentation Overlay")
-    axes[1, 1].axis("off")
-
-    plt.tight_layout()
-    plt.show()
-
-
 # In[ ]:
-
-
-image_3d = cell_mask.copy()
-
-segmentation = ActiveContours3D(
-    image_3d,
-    iterations=100,
-    alpha=0.01,
-    beta=0.05,  # Lower to prevent merging
-    gamma=0.05,
-    voxel_spacing=(0.5, 0.1, 0.1),
-)
-
-mask = segmentation.segment()
-mask = segmentation.post_process_mask(separate_objects=True)
 
 
 # In[ ]:
@@ -1655,7 +1356,7 @@ mask = segmentation.post_process_mask(separate_objects=True)
 # ## run the mask reassignment function (post-hoc)
 # ### This needs to occur after both nuclei and cell segmentations are done
 
-# In[37]:
+# In[ ]:
 
 
 # cell_df = get_labels_for_post_hoc_reassignment(
@@ -1666,7 +1367,7 @@ mask = segmentation.post_process_mask(separate_objects=True)
 # )
 
 
-# In[38]:
+# In[ ]:
 
 
 # nuclei_mask, reassigned_nuclei_df = run_post_hoc_mask_reassignment(
@@ -1680,7 +1381,7 @@ mask = segmentation.post_process_mask(separate_objects=True)
 
 # ## Cytoplasm Segmentation
 
-# In[39]:
+# In[ ]:
 
 
 # cytoplasm_mask = create_cytoplasm_masks(
@@ -1691,7 +1392,7 @@ mask = segmentation.post_process_mask(separate_objects=True)
 
 # ## Organoid segmentation (derived from cell segmentation)
 
-# In[40]:
+# In[ ]:
 
 
 # # convert the cell masks to binary masks
@@ -1708,7 +1409,7 @@ mask = segmentation.post_process_mask(separate_objects=True)
 
 # ## Save the segmented masks
 
-# In[41]:
+# In[ ]:
 
 
 # nuclei_mask_output = pathlib.Path(f"{mask_path}/nuclei_mask.tiff")
@@ -1721,7 +1422,7 @@ tifffile.imwrite(cell_mask_output, cell_mask)
 # # tifffile.imwrite(organoid_mask_output, organoid_mask)
 
 
-# In[42]:
+# In[ ]:
 
 
 # end_mem = psutil.Process(os.getpid()).memory_info().rss / 1024**2

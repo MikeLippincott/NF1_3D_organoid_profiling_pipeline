@@ -6,7 +6,7 @@
 # Running each individual task as its own script is modular but requires overhead to load the data each time.
 #
 
-# In[ ]:
+# In[1]:
 
 
 import argparse
@@ -33,7 +33,7 @@ from organoid_segmentation import *
 from segmentation_decoupling import *
 from skimage.filters import sobel
 
-# In[ ]:
+# In[2]:
 
 
 start_time = time.time()
@@ -41,7 +41,7 @@ start_time = time.time()
 start_mem = psutil.Process(os.getpid()).memory_info().rss / 1024**2
 
 
-# In[ ]:
+# In[3]:
 
 
 root_dir, in_notebook = init_notebook()
@@ -51,7 +51,7 @@ image_base_dir = bandicoot_check(
 )
 
 
-# In[ ]:
+# In[4]:
 
 
 if not in_notebook:
@@ -87,7 +87,7 @@ mask_path = pathlib.Path(
 mask_path.mkdir(exist_ok=True, parents=True)
 
 
-# In[ ]:
+# In[5]:
 
 
 # look up the morphology of the organoid from json file
@@ -104,7 +104,7 @@ print(f"Organoid morphology for {well_fov}: {morphology}")
 morphology = "globular"  # FOR TESTING ONLY - REMOVE LATER
 
 
-# In[ ]:
+# In[6]:
 
 
 return_dict = read_in_channels(
@@ -131,7 +131,7 @@ del cyto2_raw
 
 # ## Segment the cells
 
-# In[ ]:
+# In[7]:
 
 
 def segment_cells_with_3D_watershed(
@@ -205,13 +205,11 @@ def perform_morphology_dependent_segmentation(
     elevation_map_threshold_signal = elevation_map.copy()
     elevation_map_threshold_signal = elevation_map_threshold_signal > threshold
 
-    nuclei_mask = skimage.measure.label(nuclei_mask > 0)
-
     min_size = 100  # volume in voxels
     max_size = 10_000_000  # volume in voxels
 
     if label == "globular":
-        elevation_map = skimage.filters.gaussian(elevation_map, sigma=1.0)
+        elevation_map = skimage.filters.gaussian(cyto2, sigma=1.0)
         elevation_map = sobel(elevation_map)
 
     elif label == "dissociated":
@@ -222,20 +220,20 @@ def perform_morphology_dependent_segmentation(
         )
         elevation_map = sobel(elevation_map)
         elevation_map = skimage.filters.gaussian(elevation_map, sigma=3)
-        nuclei_mask = skimage.morphology.erosion(
-            nuclei_mask > 0, skimage.morphology.ball(1)
-        )
-        nuclei_mask = skimage.measure.label(nuclei_mask)
+        # nuclei_mask = skimage.morphology.erosion(
+        #     nuclei_mask > 0, skimage.morphology.ball(1)
+        # )
+        # nuclei_mask = skimage.measure.label(nuclei_mask)
     elif label == "small":
         elevation_map = sobel(elevation_map)
         elevation_map = skimage.filters.gaussian(elevation_map, sigma=3)
     elif label == "elongated":
         elevation_map = sobel(elevation_map_threshold_signal)
         elevation_map = skimage.filters.gaussian(elevation_map, sigma=3)
-        nuclei_mask = skimage.morphology.erosion(
-            nuclei_mask > 0, skimage.morphology.ball(1)
-        )
-        nuclei_mask = skimage.measure.label(nuclei_mask)
+        # nuclei_mask = skimage.morphology.erosion(
+        #     nuclei_mask > 0, skimage.morphology.ball(1)
+        # )
+        # nuclei_mask = skimage.measure.label(nuclei_mask)
     else:
         raise ValueError(f"Unknown morphology label: {label}")
 
@@ -257,7 +255,7 @@ def perform_morphology_dependent_segmentation(
     return cell_mask
 
 
-# In[ ]:
+# In[8]:
 
 
 cell_mask = perform_morphology_dependent_segmentation(
@@ -267,7 +265,7 @@ cell_mask = perform_morphology_dependent_segmentation(
 )
 
 
-# In[ ]:
+# In[9]:
 
 
 if in_notebook:
@@ -290,7 +288,7 @@ if in_notebook:
 # ## run the mask reassignment function (post-hoc)
 # ### This needs to occur after both nuclei and cell segmentations are done
 
-# In[ ]:
+# In[10]:
 
 
 cell_df = get_labels_for_post_hoc_reassignment(
@@ -301,16 +299,16 @@ nuclei_df = get_labels_for_post_hoc_reassignment(
 )
 
 
-# In[ ]:
+# In[11]:
 
 
-nuclei_mask, reassigned_nuclei_df = run_post_hoc_mask_reassignment(
-    nuclei_mask=nuclei_mask,
-    cell_mask=cell_mask,
-    nuclei_df=nuclei_df,
-    cell_df=cell_df,
-    return_dataframe=True,
-)
+# nuclei_mask, reassigned_nuclei_df = run_post_hoc_mask_reassignment(
+#     nuclei_mask=nuclei_mask,
+#     cell_mask=cell_mask,
+#     nuclei_df=nuclei_df,
+#     cell_df=cell_df,
+#     return_dataframe=True,
+# )
 
 
 # In[ ]:
@@ -347,9 +345,9 @@ cytoplasm_mask = create_cytoplasm_masks(
 cell_binary_mask = cell_mask.copy()
 cell_binary_mask[cell_binary_mask > 0] = 1
 # dilate the cell masks slightly
-cell_binary_mask = skimage.morphology.binary_dilation(
-    cell_binary_mask, skimage.morphology.ball(1)
-)
+# cell_binary_mask = skimage.morphology.binary_dilation(
+#     cell_binary_mask, skimage.morphology.ball(1)
+# )
 # convert back to instance mask
 # make sure each instance has a unique integer label
 organoid_mask = skimage.measure.label(cell_binary_mask)

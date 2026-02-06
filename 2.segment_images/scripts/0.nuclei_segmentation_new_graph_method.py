@@ -71,7 +71,7 @@ if not in_notebook:
 else:
     print("Running in a notebook")
     patient = "NF0014_T1"
-    well_fov = "C4-2"
+    well_fov = "C8-1"
     window_size = 3
     clip_limit = 0.01
     input_subparent_name = "zstack_images"
@@ -669,26 +669,27 @@ nuclei_mask, diag = full_pipeline(nuclei_masks, max_match_distance=100)
 
 # ## relabel the nuclei
 
-# In[ ]:
+# In[11]:
 
 
 nuclei_mask, _, _ = relabel_sequential(nuclei_mask)
 
 
-# In[12]:
+# In[ ]:
 
 
-for z in range(nuclei_mask.shape[0]):
-    plt.figure(figsize=(10, 4))
-    plt.subplot(121)
-    plt.imshow(nuclei[z], cmap="inferno")
-    plt.title("Nuclei Masks After 3D Graph-Based Segmentation")
-    plt.axis("off")
-    plt.subplot(122)
-    plt.imshow(nuclei_mask[z], cmap="nipy_spectral")
-    plt.title("Nuclei Masks After 2D Segmentation")
-    plt.axis("off")
-    plt.show()
+if in_notebook:
+    for z in range(nuclei_mask.shape[0]):
+        plt.figure(figsize=(10, 4))
+        plt.subplot(121)
+        plt.imshow(nuclei[z], cmap="inferno")
+        plt.title("Nuclei Masks After 3D Graph-Based Segmentation")
+        plt.axis("off")
+        plt.subplot(122)
+        plt.imshow(nuclei_mask[z], cmap="nipy_spectral")
+        plt.title("Nuclei Masks After 2D Segmentation")
+        plt.axis("off")
+        plt.show()
 
 
 # ## Save the segmented masks

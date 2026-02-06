@@ -71,7 +71,7 @@ if not in_notebook:
 else:
     print("Running in a notebook")
     patient = "NF0014_T1"
-    well_fov = "E10-1"
+    well_fov = "G7-1"
     window_size = 3
     clip_limit = 0.01
     input_subparent_name = "zstack_images"
@@ -133,38 +133,41 @@ nuclei_masks = np.array(  # convert to array
 
 # ## remove small masks in each slice
 
-# In[18]:
+# In[7]:
 
 
-for z in range(nuclei_masks.shape[0]):
-    nuclei_masks[z] = skimage.morphology.remove_small_objects(
-        nuclei_masks[z], min_size=500, connectivity=1
-    )
+# Remove small objects while preserving label IDs
+# we avoid using the built-in skimage function to preserve label IDs
+props = skimage.measure.regionprops(nuclei_masks)
+
+# Remove objects smaller than threshold
+for prop in props:
+    if prop.area < 1000:  # 10 X 10 X 10 cube equivalent to 1000 voxels
+        print(prop)
+        nuclei_masks[nuclei_masks == prop.label] = 0
+if in_notebook:
+    z = nuclei_masks.shape[0] // 4
+    plt.figure(figsize=(10, 4))
+    plt.imshow(nuclei_masks[z], cmap="nipy_spectral")
+    plt.title("Nuclei Masks After 3D Graph-Based Segmentation")
+    plt.axis("off")
+    plt.show()
 
 
-# In[20]:
+# In[8]:
 
 
-# generate the coordinates dataframe for reconstruction
-coordinates_df = generate_coordinates_for_reconstruction(nuclei_masks)
-# generate distance pairs dataframe
-df = generate_distance_pairs(coordinates_df, x_y_vector_radius_max_constraint=20)
-# generate and solve graph to get longest paths
-longest_paths = solve_graph(graph_creation(df))
-# collapse labels based on longest paths and reassign labels in nuclei masks
-image = reassign_labels(nuclei_masks, collapse_labels(coordinates_df, longest_paths))
-# refine the nuclei masks
-nuclei_mask = run_post_hoc_refinement(
-    mask_image=image,
-    sliding_window_context=3,
+nuclei_mask, diag = full_pipeline(
+    input_masks=nuclei_masks,
+    max_match_distance=100,
+    max_trajectory_length=12,
+    verbose=False,
 )
-
-del image, coordinates_df, df, longest_paths
 
 
 # ## relabel the nuclei
 
-# In[21]:
+# In[9]:
 
 
 nuclei_mask, _, _ = relabel_sequential(nuclei_mask)

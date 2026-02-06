@@ -1088,3 +1088,21 @@ def create_cytoplasm_masks(
         cytoplasm_masks[z_slice_index] = cytoplasm_mask
 
     return cytoplasm_masks
+
+
+def clean_border_objects(segmentation, border_width=20):
+    cleaned_seg = segmentation.copy()
+    max_z, max_y, max_x = segmentation.shape
+    border_labels = set()
+    # check x borders
+    border_labels.update(np.unique(segmentation[:, :, max_x - border_width :]))
+    border_labels.update(np.unique(segmentation[:, :, :border_width]))
+    # check y borders
+    border_labels.update(np.unique(segmentation[:, :border_width, :]))
+    border_labels.update(np.unique(segmentation[:, -border_width:, :]))
+    # remove these labels
+    for label in border_labels:
+        if label == 0:
+            continue
+        cleaned_seg[segmentation == label] = 0
+    return cleaned_seg
